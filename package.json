@@ -1,0 +1,9 @@
+{
+  "name": "agro-cafe-workspace",
+  "version": "1.0.0",
+  "description": "Workspace principal do AgroCafé",
+  "scripts": {
+    "sync": "powershell -ExecutionPolicy Bypass -File ./sync.ps1",
+    "deploy": "powershell -ExecutionPolicy Bypass -File ./sync.ps1"
+  }
+}

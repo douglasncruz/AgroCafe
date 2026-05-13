@@ -1,0 +1,28 @@
+# Global node_modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Local database files
+*.sqlite
+*.sqlite-journal
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts
+dist/
+.next/
+build/
