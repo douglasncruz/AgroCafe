@@ -8,7 +8,13 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        AppService,
+        {
+          provide: 'EntityManager',
+          useValue: {}, // Mock vazio para o teste passar
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
