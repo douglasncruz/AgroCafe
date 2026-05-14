@@ -10,7 +10,11 @@ async function bootstrap() {
   
   // Enable CORS safely
   app.enableCors({
-    origin: true, // Em produção, você pode trocar true pela URL da Vercel para mais segurança
+    origin: [
+      'https://agrocerradocafe.vercel.app',
+      'https://agro-cafe.vercel.app',
+      'http://localhost:3000'
+    ],
     credentials: true,
   });
 
