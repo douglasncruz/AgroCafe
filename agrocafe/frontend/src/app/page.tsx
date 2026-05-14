@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Leaf, Sprout, LineChart, ShieldCheck, ChevronRight, BarChart3, Users, Smartphone } from "lucide-react";
+import { Leaf, Sprout, LineChart, ShieldCheck, ChevronRight, BarChart3, Users, Smartphone, Coffee } from "lucide-react";
 
 export default function Home() {
   return (
