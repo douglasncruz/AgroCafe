@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd agrocafe/frontend && npm run build",
-  "installCommand": "cd agrocafe/frontend && npm install",
-  "outputDirectory": "agrocafe/frontend/.next",
-  "framework": "nextjs"
-}
