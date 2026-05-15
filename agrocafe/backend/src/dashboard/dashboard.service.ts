@@ -15,13 +15,23 @@ export class DashboardService {
     @InjectRepository(Machine) private machineRepo: Repository<Machine>,
   ) {}
 
-  async getSummary() {
-    const expenses = await this.expenseRepository.createQueryBuilder('expense')
-      .leftJoinAndSelect('expense.farm', 'farm')
-      .getMany();
+  async getSummary(harvestId?: string) {
+    const expenseQuery = this.expenseRepository.createQueryBuilder('expense')
+      .leftJoinAndSelect('expense.farm', 'farm');
 
-    const revenues = await this.revenueRepository.createQueryBuilder('revenue')
-      .getMany();
+    if (harvestId) {
+      expenseQuery.where('expense.harvestId = :harvestId', { harvestId });
+    }
+
+    const expenses = await expenseQuery.getMany();
+
+    const revenueQuery = this.revenueRepository.createQueryBuilder('revenue');
+    
+    if (harvestId) {
+      revenueQuery.where('revenue.harvestId = :harvestId', { harvestId });
+    }
+
+    const revenues = await revenueQuery.getMany();
 
     const maintenances = await this.maintenanceRepo.createQueryBuilder('maint')
       .leftJoinAndSelect('maint.machine', 'machine')
