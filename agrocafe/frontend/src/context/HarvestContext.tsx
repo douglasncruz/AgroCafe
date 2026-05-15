@@ -28,6 +28,11 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
   const fetchHarvests = async () => {
     try {
       const token = localStorage.getItem("@AgroCafe:token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      
       // Buscamos a fazenda do usuário (simplificado para a primeira fazenda encontrada)
       const farms = await api.get('/farms', token);
       if (farms && farms.length > 0) {
