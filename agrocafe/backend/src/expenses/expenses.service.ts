@@ -16,10 +16,13 @@ export class ExpensesService {
   }
 
   async create(createExpenseDto: any) {
-    const farm = await this.farmRepo.findOne({ where: { id: createExpenseDto.farmId } });
+    const { farmId, harvestId, ...rest } = createExpenseDto;
+    const farm = farmId ? await this.farmRepo.findOne({ where: { id: farmId } }) : null;
+    
     const expense = this.expenseRepo.create({
-      ...createExpenseDto,
+      ...rest,
       farm: farm || undefined,
+      harvest: harvestId ? { id: harvestId } : undefined
     });
     return this.expenseRepo.save(expense);
   }
