@@ -28,22 +28,24 @@ export class AppService implements OnModuleInit {
       await this.entityManager.delete(User, { email: 'duglas.cruz@agrocerradocafe.com.br' });
 
       for (const u of defaultUsers) {
-        let user = await this.entityManager.findOne(User, { where: { email: u.email } });
         const hashedPassword = await bcrypt.hash(u.password, 10);
+        const existingUser = await this.entityManager.findOne(User, { where: { email: u.email } });
         
-        if (!user) {
-          user = this.entityManager.create(User, {
+        if (!existingUser) {
+          const newUser = this.entityManager.create(User, {
             name: u.name,
             email: u.email,
             password_hash: hashedPassword,
           });
-          await this.entityManager.save(user);
-          console.log(`✅ Usuário criado: ${u.email}`);
+          await this.entityManager.save(newUser);
+          console.log(`[BOOTSTRAP] ✅ Criado novo usuário: ${u.email}`);
         } else {
-          // Forçar atualização da senha para garantir que as credenciais solicitadas funcionem
-          user.password_hash = hashedPassword;
-          await this.entityManager.save(user);
-          console.log(`🔄 Senha atualizada para: ${u.email}`);
+          // Atualizar senha e nome para garantir que as credenciais solicitadas funcionem
+          await this.entityManager.update(User, { id: existingUser.id }, { 
+            password_hash: hashedPassword,
+            name: u.name 
+          });
+          console.log(`[BOOTSTRAP] 🔄 Credenciais sincronizadas para: ${u.email}`);
         }
       }
     } catch (error) {
