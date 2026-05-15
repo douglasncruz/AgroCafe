@@ -21,9 +21,11 @@ export class AppService implements OnModuleInit {
         { name: 'Administrador Agro', email: 'admin@agrocerradocafe.com.br', password: 'admin' },
         { name: 'José Cruz', email: 'jose.cruz@agrocerradocafe.com.br', password: 'Mjd2725' },
         { name: 'Zipora Cruz', email: 'zipora.cruz@agrocerradocafe.com.br', password: 'Agro@2026' },
-        { name: 'Douglas Cruz', email: 'douglas.cruz@agrocerradocafe.com.br', password: 'Druida@011322' },
-        { name: 'Douglas Cruz (Alias)', email: 'duglas.cruz@agrocerradocafe.com.br', password: 'Druida@011322' }
+        { name: 'Douglas Cruz', email: 'douglas.cruz@agrocerradocafe.com.br', password: 'Druida@011322' }
       ];
+
+      // Remover usuário com grafia incorreta se existir
+      await this.entityManager.delete(User, { email: 'duglas.cruz@agrocerradocafe.com.br' });
 
       for (const u of defaultUsers) {
         let existingUser = await this.entityManager.findOne(User, { where: { email: u.email } });
