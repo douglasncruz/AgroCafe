@@ -28,7 +28,7 @@ export default function RegisterPage() {
       localStorage.setItem("@AgroCafe:token", data.access_token);
       localStorage.setItem("@AgroCafe:user", JSON.stringify(data.user));
       
-      toast.success("Conta criada com sucesso! Bem-vindo ao AgroCafé.");
+      toast.success("Conta criada com sucesso! Bem-vindo ao AgroCerradoCafé.");
       router.push("/dashboard"); // Futura rota
     } catch (err: any) {
       toast.error(err.message || "Erro ao criar conta. E-mail pode já estar em uso.");
@@ -47,7 +47,7 @@ export default function RegisterPage() {
               <Coffee className="h-6 w-6" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Agro<span className="text-farm-600 dark:text-farm-500">Café</span>
+              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
 
@@ -146,7 +146,7 @@ export default function RegisterPage() {
         <div className="relative z-20 flex justify-end">
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold tracking-tight">
-              Agro<span className="text-farm-400">Café</span>
+              AgroCerrado<span className="text-farm-400">Café</span>
             </span>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-md">
               <Coffee className="h-6 w-6" />

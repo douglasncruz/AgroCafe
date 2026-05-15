@@ -12,7 +12,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={40} height={40} className="rounded-lg" />
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Agro<span className="text-farm-600 dark:text-farm-500">Café</span>
+              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
           <nav className="hidden gap-6 md:flex">
@@ -67,7 +67,7 @@ export default function Home() {
               </h1>
               
               <p className="text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl leading-relaxed">
-                Transformando dados da lavoura em decisões inteligentes, produtividade e lucro. O AgroCafé substitui planilhas complexas por um sistema moderno, seguro e fácil de usar, focado no sucesso do produtor.
+                Transformando dados da lavoura em decisões inteligentes, produtividade e lucro. O AgroCerradoCafé substitui planilhas complexas por um sistema moderno, seguro e fácil de usar, focado no sucesso do produtor.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -170,7 +170,7 @@ export default function Home() {
                 Pronto para modernizar sua gestão?
               </h2>
               <p className="text-lg text-slate-300 mb-10">
-                Junte-se a produtores que já estão aumentando a rentabilidade de suas lavouras com o AgroCafé.
+                Junte-se a produtores que já estão aumentando a rentabilidade de suas lavouras com o AgroCerradoCafé.
               </p>
               <Link href="/register">
                 <Button variant="primary" size="xl" className="rounded-full shadow-lg shadow-farm-500/20 px-8">
@@ -189,11 +189,11 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Coffee className="h-6 w-6 text-farm-600" />
               <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Agro<span className="text-farm-600">Café</span>
+                AgroCerrado<span className="text-farm-600">Café</span>
               </span>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              © {new Date().getFullYear()} AgroCafé. Todos os direitos reservados.
+              © {new Date().getFullYear()} AgroCerradoCafé. Todos os direitos reservados.
             </p>
             <div className="flex gap-4">
               <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">

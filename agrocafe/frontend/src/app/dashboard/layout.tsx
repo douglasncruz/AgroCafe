@@ -69,7 +69,7 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3">
             <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={40} height={40} className="rounded-lg shadow-lg" />
             <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Agro<span className="text-farm-600 dark:text-farm-500">Café</span>
+              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
         </div>

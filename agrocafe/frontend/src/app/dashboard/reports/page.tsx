@@ -256,7 +256,7 @@ export default function ReportsPage() {
           </div>
           
           <div className="p-4 bg-slate-50 text-center text-xs text-slate-400 dark:bg-slate-900 dark:text-slate-600 print:text-slate-500 border-t border-slate-200 dark:border-slate-800 print:border-slate-300">
-            Gerado pelo AgroCafé | {new Date().toLocaleString('pt-BR')}
+            Gerado pelo AgroCerradoCafé | {new Date().toLocaleString('pt-BR')}
           </div>
         </div>
       ) : (

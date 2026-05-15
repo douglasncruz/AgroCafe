@@ -57,7 +57,7 @@ export default function LoginPage() {
             <Coffee className="h-6 w-6" />
           </div>
           <span className="text-xl font-bold tracking-tight">
-            Agro<span className="text-farm-400">Café</span>
+            AgroCerrado<span className="text-farm-400">Café</span>
           </span>
         </div>
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
               <Coffee className="h-6 w-6" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Agro<span className="text-farm-600 dark:text-farm-500">Café</span>
+              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
 

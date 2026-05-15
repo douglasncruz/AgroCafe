@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "AgroCafé | Gestão Financeira para Lavoura",
+  title: "AgroCerradoCafé | Gestão Financeira para Lavoura",
   description: "Sistema completo de gestão financeira para propriedades cafeeiras.",
 };
 

@@ -15,7 +15,7 @@ export default function HowItWorks() {
 
       {/* Header */}
       <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4 text-center">
-        Como o AgroCafé funciona?
+        Como o AgroCerradoCafé funciona?
       </h1>
       <p className="text-lg text-slate-600 dark:text-slate-300 max-w-3xl text-center mb-12">
         Conheça as principais funcionalidades da nossa plataforma que trazem controle, inteligência e segurança para a sua lavoura.
@@ -25,7 +25,7 @@ export default function HowItWorks() {
       <div className="w-full max-w-4xl mb-12">
         <Image
           src="/how_it_works_mockup_1778596806856.png"
-          alt="Apresentação das funcionalidades do AgroCafé"
+          alt="Apresentação das funcionalidades do AgroCerradoCafé"
           width={1200}
           height={800}
           className="rounded-xl shadow-lg"
