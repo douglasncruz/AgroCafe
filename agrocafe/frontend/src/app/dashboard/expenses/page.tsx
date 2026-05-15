@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { api } from "@/services/api";
+import { useHarvest } from "@/context/HarvestContext";
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { harvests, selectedHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export default function ExpensesPage() {
   const [category, setCategory] = useState("Insumos");
   const [farmId, setFarmId] = useState("");
   const [payerName, setPayerName] = useState("");
+  const [harvestId, setHarvestId] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   const loadData = async () => {
@@ -37,6 +40,7 @@ export default function ExpensesPage() {
       setExpenses(expData);
       setFarms(farmData);
       if (farmData.length > 0) setFarmId(farmData[0].id);
+      if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {
       toast.error("Erro ao carregar despesas.");
     } finally {
@@ -77,6 +81,7 @@ export default function ExpensesPage() {
       formData.append('category', category);
       formData.append('farmId', farmId);
       if (payerName) formData.append('payer_name', payerName);
+      if (harvestId) formData.append('harvestId', harvestId);
       if (receiptFile) formData.append('receipt', receiptFile);
 
       await api.postForm('/expenses', formData, token || "");
@@ -139,15 +144,19 @@ export default function ExpensesPage() {
               </tr>
             </thead>
             <tbody>
-              {expenses.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
-                    Nenhuma despesa encontrada.
-                  </td>
-                </tr>
-              ) : (
-                expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                {expenses
+                  .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
+                  .length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                      Nenhuma despesa encontrada para esta safra.
+                    </td>
+                  </tr>
+                ) : (
+                  expenses
+                    .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
+                    .map((expense) => (
+                      <tr key={expense.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       {new Date(expense.date).toLocaleDateString('pt-BR')}
                     </td>
@@ -289,6 +298,22 @@ export default function ExpensesPage() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="harvest">Safra Vinculada</Label>
+                  <select 
+                    id="harvest"
+                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-farm-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                    value={harvestId}
+                    onChange={e => setHarvestId(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Selecione a Safra...</option>
+                    {harvests.map(h => (
+                      <option key={h.id} value={h.id}>{h.name} {h.status === 'Fechada' ? '(Fechada)' : ''}</option>
+                    ))}
+                  </select>
                 </div>
 
               </form>
