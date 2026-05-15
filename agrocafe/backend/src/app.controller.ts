@@ -7,6 +7,7 @@ import * as path from 'path';
 import { Farm } from './farms/entities/farm.entity';
 import { Expense } from './expenses/entities/expense.entity';
 import { User } from './users/entities/user.entity';
+import { Harvest } from './harvests/entities/harvest.entity';
 import * as bcrypt from 'bcrypt';
 
 @Controller('api')
@@ -78,10 +79,26 @@ export class AppController {
           
           if (totalYearlyExpense && !isNaN(totalYearlyExpense)) {
             const monthlyAmount = totalYearlyExpense / 12;
+
+            // Find or create Harvest for this year/farm
+            let harvest = await this.entityManager.findOne(Harvest, { 
+              where: { name: `Safra ${year}`, farm: { id: farm.id } } 
+            });
+            
+            if (!harvest) {
+              harvest = this.entityManager.create(Harvest, {
+                name: `Safra ${year}`,
+                farm: farm,
+                is_active: year === 2026,
+                status: year < 2026 ? 'Fechada' : 'Aberta'
+              });
+              harvest = await this.entityManager.save(harvest);
+            }
             
             for (let month = 0; month < 12; month++) {
               const expense = this.entityManager.create(Expense, {
                 farm: farm,
+                harvest: harvest,
                 description: `Custeio geral - ${farmName} (${year})`,
                 amount: monthlyAmount,
                 date: new Date(year, month, 15),
