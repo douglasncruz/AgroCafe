@@ -53,6 +53,32 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       
+      {/* Seletor de Safra no Topo do Painel */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel 360°</h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            {selectedHarvest ? `Análise consolidada da ${selectedHarvest.name}` : "Selecione uma safra para analisar"}
+          </p>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          {harvests.map((h) => (
+            <button
+              key={h.id}
+              onClick={() => selectHarvest(h.id)}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                selectedHarvest?.id === h.id
+                  ? "bg-farm-600 text-white shadow-lg shadow-farm-600/20 scale-105"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+              }`}
+            >
+              {h.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      
       {/* Primeiros 4 Cards Principais */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
