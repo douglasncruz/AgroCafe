@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Map, 
@@ -29,6 +29,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
 
@@ -38,6 +39,12 @@ export default function DashboardLayout({
       setUser(JSON.parse(savedUser));
     }
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("@AgroCafe:user");
+    localStorage.removeItem("@AgroCafe:token");
+    router.push("/login");
+  };
 
   const isAdmin = user?.email === 'admin@agrocafe.com.br';
 
@@ -121,7 +128,10 @@ export default function DashboardLayout({
             </div>
           </div>
           
-          <button className="flex w-full items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors">
+          <button 
+            onClick={handleLogout}
+            className="flex w-full items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+          >
             <LogOut className="h-4 w-4" />
             Sair da Plataforma
           </button>
