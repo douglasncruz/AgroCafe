@@ -49,7 +49,7 @@ import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
             type: 'postgres',
             url: databaseUrl,
             entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical],
-            synchronize: configService.get('NODE_ENV') !== 'production',
+            synchronize: true, // Habilitado para criar as tabelas no Supabase durante a instalação
             ssl: {
               rejectUnauthorized: false,
             },
