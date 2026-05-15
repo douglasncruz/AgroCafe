@@ -4,18 +4,25 @@ import { useEffect, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat } from "lucide-react";
 import { api } from "@/services/api";
+import { useHarvest } from "@/context/HarvestContext";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { selectedHarvest } = useHarvest();
 
   useEffect(() => {
     async function loadData() {
       try {
+        setLoading(true);
         const token = localStorage.getItem("@AgroCafe:token");
         if (!token) return;
         
-        const summary = await api.get('/dashboard/summary', token);
+        const url = selectedHarvest 
+          ? `/dashboard/summary?harvestId=${selectedHarvest.id}` 
+          : '/dashboard/summary';
+          
+        const summary = await api.get(url, token);
         setData(summary);
       } catch (err) {
         console.error("Erro ao carregar dados do dashboard:", err);
@@ -24,7 +31,7 @@ export default function DashboardPage() {
       }
     }
     loadData();
-  }, []);
+  }, [selectedHarvest]);
 
   if (loading) {
     return (
