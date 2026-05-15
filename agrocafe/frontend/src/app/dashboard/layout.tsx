@@ -19,9 +19,11 @@ import {
   Search,
   ChevronDown,
   ShieldAlert,
-  ShieldCheck
+  ShieldCheck,
+  Wheat
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useHarvest } from "@/context/HarvestContext";
 
 export default function DashboardLayout({
   children,
@@ -30,6 +32,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { harvests, selectedHarvest, selectHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
 
@@ -178,10 +181,27 @@ export default function DashboardLayout({
               <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-950"></span>
             </button>
             <div className="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
-            <button className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
-              <span>Safra 2026</span>
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </button>
+            
+            {/* Harvest Selector */}
+            <div className="relative group">
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-farm-50 text-farm-700 dark:bg-farm-900/20 dark:text-farm-400 border border-farm-200 dark:border-farm-800 hover:bg-farm-100 transition-all">
+                <Wheat className="h-4 w-4" />
+                <span>{selectedHarvest ? selectedHarvest.name : "Selecionar Safra"}</span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </button>
+              
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50">
+                {harvests.map((h) => (
+                  <button
+                    key={h.id}
+                    onClick={() => selectHarvest(h.id)}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${selectedHarvest?.id === h.id ? "font-bold text-farm-600" : "text-slate-600 dark:text-slate-400"}`}
+                  >
+                    {h.name} {h.status === 'Fechada' ? '🔒' : ''}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </header>
 
