@@ -32,6 +32,7 @@ export class RevenuesService {
       receiver_name: createDto.receiver_name,
       receipt_url: createDto.receipt_url,
       farm: farm || undefined,
+      harvest: createDto.harvestId ? { id: createDto.harvestId } : undefined
     });
     return this.revenueRepo.save(revenue);
   }
