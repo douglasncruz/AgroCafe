@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Harvest } from '../../harvests/entities/harvest.entity';
 
 @Entity('farms')
 export class Farm {
@@ -20,6 +21,9 @@ export class Farm {
 
   @ManyToOne(() => User)
   user: User;
+
+  @OneToMany(() => Harvest, (harvest) => harvest.farm)
+  harvests: Harvest[];
 
   @CreateDateColumn()
   created_at: Date;
