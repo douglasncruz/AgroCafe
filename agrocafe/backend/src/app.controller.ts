@@ -24,7 +24,7 @@ export class AppController {
   @Post('import/seed-excel')
   async seedExcel() {
     try {
-      const filePath = 'C:\\Users\\1124485\\OneDrive - Instituto Presbiteriano Mackenzie\\Documentos\\Antigravity\\agrocafe\\Despesas-Cafe.xlsx';
+      const filePath = path.join(process.cwd(), 'Despesas-Cafe.xlsx');
       const workbook = xlsx.readFile(filePath);
       const sheetName = workbook.SheetNames[0];
       const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
