@@ -18,6 +18,7 @@ import { PartnersModule } from './partners/partners.module';
 import { ReportsModule } from './reports/reports.module';
 import { AgrochemicalsModule } from './agrochemicals/agrochemicals.module';
 import { AuditModule } from './audit/audit.module';
+import { HarvestsModule } from './harvests/harvests.module';
 import { User } from './users/entities/user.entity';
 import { Farm } from './farms/entities/farm.entity';
 import { Plot } from './plots/entities/plot.entity';
@@ -27,6 +28,7 @@ import { Machine } from './machines/entities/machine.entity';
 import { Maintenance } from './machines/entities/maintenance.entity';
 import { Partner } from './partners/entities/partner.entity';
 import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
+import { Harvest } from './harvests/entities/harvest.entity';
 
 @Module({
   imports: [
@@ -48,7 +50,7 @@ import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
           return {
             type: 'postgres',
             url: databaseUrl,
-            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical],
+            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest],
             synchronize: true, // Habilitado para criar as tabelas no Supabase durante a instalação
             ssl: {
               rejectUnauthorized: false,
@@ -75,7 +77,8 @@ import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
     PartnersModule,
     ReportsModule,
     AgrochemicalsModule,
-    AuditModule
+    AuditModule,
+    HarvestsModule
   ],
   controllers: [AppController],
   providers: [
