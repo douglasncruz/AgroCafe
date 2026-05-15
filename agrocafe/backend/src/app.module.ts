@@ -61,7 +61,7 @@ import { Harvest } from './harvests/entities/harvest.entity';
         return {
           type: 'sqlite',
           database: 'agrocafe.sqlite',
-          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical],
+          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest],
           synchronize: true,
         };
       },
