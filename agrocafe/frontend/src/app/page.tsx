@@ -22,6 +22,9 @@ export default function Home() {
             <Link href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-farm-600 dark:text-slate-300 dark:hover:text-farm-500 transition-colors">
               Como Funciona
             </Link>
+            <Link href="/contact" className="text-sm font-medium text-slate-600 hover:text-farm-600 dark:text-slate-300 dark:hover:text-farm-500 transition-colors">
+              Contato
+            </Link>
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login">
@@ -191,7 +194,7 @@ export default function Home() {
               <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Privacidade
               </Link>
-              <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <Link href="/contact" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Contato
               </Link>
             </div>
