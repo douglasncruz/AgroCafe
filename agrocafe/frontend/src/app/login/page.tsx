@@ -137,12 +137,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="text-center text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Não tem uma conta? </span>
-            <Link href="/register" className="font-medium text-farm-600 hover:text-farm-500 dark:text-farm-400 transition-colors">
-              Crie uma conta gratuita
-            </Link>
-          </div>
         </div>
       </div>
     </div>

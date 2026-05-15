@@ -22,17 +22,11 @@ export default function Home() {
             <Link href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-farm-600 dark:text-slate-300 dark:hover:text-farm-500 transition-colors">
               Como Funciona
             </Link>
-            <Link href="#pricing" className="text-sm font-medium text-slate-600 hover:text-farm-600 dark:text-slate-300 dark:hover:text-farm-500 transition-colors">
-              Planos
-            </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-farm-600 dark:text-slate-300 dark:hover:text-farm-500 transition-colors hidden sm:block">
-              Entrar
-            </Link>
-            <Link href="/register">
-              <Button variant="primary" className="rounded-full shadow-lg shadow-farm-600/20">
-                Começar Agora
+            <Link href="/login">
+              <Button variant="primary" className="rounded-full shadow-lg shadow-farm-600/20 px-8">
+                Entrar
               </Button>
             </Link>
           </div>
@@ -71,15 +65,10 @@ export default function Home() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <Link href="/register" className="w-full sm:w-auto">
-                  <Button variant="primary" size="xl" className="w-full rounded-full shadow-xl shadow-farm-600/20 group">
-                    Criar Conta Grátis
-                    <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
                 <Link href="/how-it-works" className="w-full sm:w-auto">
-                  <Button variant="outline" size="xl" className="w-full rounded-full bg-white/50 backdrop-blur-sm">
+                  <Button variant="primary" size="xl" className="w-full rounded-full shadow-xl shadow-farm-600/20 group">
                     Ver como funciona
+                    <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </div>
