@@ -26,14 +26,14 @@ export class ReportsService {
     const revenues = await this.revRepo.find({ where: { farm: { id: farmId } } });
     const maintenances = await this.maintRepo.createQueryBuilder('m')
       .leftJoinAndSelect('m.machine', 'machine')
-      .where('machine.farmId = :farmId', { farmId })
+      .where('machine.farm = :farmId', { farmId })
       .getMany();
     const partners = await this.partnerRepo.find({ where: { farm: { id: farmId } } });
 
     // Filter by year if necessary (using startsWith for simple date strings "YYYY-MM-DD")
-    const expYear = expenses.filter(e => e.date.toString().startsWith(year));
-    const revYear = revenues.filter(r => r.date.toString().startsWith(year));
-    const maintYear = maintenances.filter(m => m.date.toString().startsWith(year));
+    const expYear = expenses.filter(e => new Date(e.date).getFullYear().toString() === year);
+    const revYear = revenues.filter(r => new Date(r.date).getFullYear().toString() === year);
+    const maintYear = maintenances.filter(m => new Date(m.date).getFullYear().toString() === year);
 
     // 1. DRE (Demonstrativo do Resultado do Exercício)
     let grossRevenue = 0;
