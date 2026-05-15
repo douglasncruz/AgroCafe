@@ -18,21 +18,27 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendContactEmail } from "../contact/actions";
 
 export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulação de envio
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const result = await sendContactEmail(formData);
+    
+    if (result.success) {
       toast.success("Solicitação enviada! Douglas entrará em contato para agendar sua demonstração.");
       setLoading(false);
       setSubmitted(true);
-    }, 1500);
+    } else {
+      toast.error("Erro ao enviar solicitação. Por favor, tente novamente ou use o WhatsApp.");
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -125,11 +131,12 @@ export default function DemoPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              <input type="hidden" name="form_source" value="Solicitação de Demo" />
               <div className="space-y-2">
                 <Label htmlFor="name">Seu Nome</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input id="name" placeholder="Nome completo" className="pl-10 h-12 rounded-xl" required />
+                  <Input id="name" name="name" placeholder="Nome completo" className="pl-10 h-12 rounded-xl" required />
                 </div>
               </div>
 
@@ -138,14 +145,14 @@ export default function DemoPage() {
                   <Label htmlFor="whatsapp">WhatsApp</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                    <Input id="whatsapp" placeholder="(00) 00000-0000" className="pl-10 h-12 rounded-xl" required />
+                    <Input id="whatsapp" name="whatsapp" placeholder="(00) 00000-0000" className="pl-10 h-12 rounded-xl" required />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                    <Input id="email" type="email" placeholder="seu@email.com" className="pl-10 h-12 rounded-xl" required />
+                    <Input id="email" name="email" type="email" placeholder="seu@email.com" className="pl-10 h-12 rounded-xl" required />
                   </div>
                 </div>
               </div>
@@ -154,13 +161,13 @@ export default function DemoPage() {
                 <Label htmlFor="farm">Nome da Fazenda (Opcional)</Label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                  <Input id="farm" placeholder="Ex: Fazenda Santa Maria" className="pl-10 h-12 rounded-xl" />
+                  <Input id="farm" name="farm_name" placeholder="Ex: Fazenda Santa Maria" className="pl-10 h-12 rounded-xl" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="note">Observação</Label>
-                <Textarea id="note" placeholder="Conte-nos um pouco sobre sua necessidade..." className="min-h-[100px] rounded-xl resize-none" />
+                <Textarea id="note" name="message" placeholder="Conte-nos um pouco sobre sua necessidade..." className="min-h-[100px] rounded-xl resize-none" />
               </div>
 
               <Button variant="primary" size="xl" className="w-full rounded-xl shadow-lg shadow-farm-600/20 mt-4" disabled={loading}>

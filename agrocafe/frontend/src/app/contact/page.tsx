@@ -18,20 +18,26 @@ import {
   Globe
 } from "lucide-react";
 import { toast } from "sonner";
+import { sendContactEmail } from "./actions";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulação de envio
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const result = await sendContactEmail(formData);
+    
+    if (result.success) {
       toast.success("Mensagem enviada com sucesso! Douglas entrará em contato em breve.");
-      setLoading(false);
       (e.target as HTMLFormElement).reset();
-    }, 1500);
+    } else {
+      toast.error("Erro ao enviar mensagem. Por favor, tente novamente ou use o WhatsApp.");
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -116,24 +122,26 @@ export default function ContactPage() {
             <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800">
               <h2 className="text-3xl font-bold mb-8 text-slate-900 dark:text-white">Envie uma Mensagem</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
+                <input type="hidden" name="form_source" value="Página de Contato" />
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome Completo</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                    <Input id="name" placeholder="Seu nome" className="pl-10" required />
+                    <Input id="name" name="name" placeholder="Seu nome" className="pl-10" required />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                    <Input id="email" type="email" placeholder="seu@email.com" className="pl-10" required />
+                    <Input id="email" name="email" type="email" placeholder="seu@email.com" className="pl-10" required />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Como podemos ajudar?</Label>
                   <Textarea 
                     id="message" 
+                    name="message"
                     placeholder="Descreva sua dúvida ou sugestão..." 
                     className="min-h-[150px] resize-none"
                     required
