@@ -9,7 +9,7 @@ import { useHarvest } from "@/context/HarvestContext";
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { selectedHarvest } = useHarvest();
+  const { harvests, selectedHarvest, selectHarvest } = useHarvest();
 
   useEffect(() => {
     async function loadData() {
