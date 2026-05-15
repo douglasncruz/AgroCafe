@@ -11,7 +11,7 @@ Write-Host "Pressione Ctrl+C para parar."
 $Action = {
     $path = $Event.SourceEventArgs.FullPath
     # Ignorar pastas de sistema e git
-    if ($path -notmatch "\\.git\\" -and $path -notmatch "\\node_modules\\" -and $path -notmatch "\\.next\\") {
+    if ($path -notmatch "[\\/]\.git[\\/]" -and $path -notmatch "[\\/]\.git$" -and $path -notmatch "node_modules" -and $path -notmatch "\.next") {
         Write-Host ""
         Write-Host "⚡ Mudança detectada: $(Split-Path $path -Leaf) em $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
         powershell -ExecutionPolicy Bypass -File "$PSScriptRoot/sync.ps1" "Auto-deploy: $(Split-Path $path -Leaf)"
