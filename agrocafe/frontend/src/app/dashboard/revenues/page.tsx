@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { api } from "@/services/api";
+import { useHarvest } from "@/context/HarvestContext";
 
 export default function RevenuesPage() {
   const [revenues, setRevenues] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { harvests, selectedHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export default function RevenuesPage() {
   const [farmId, setFarmId] = useState("");
   const [buyerName, setBuyerName] = useState("");
   const [receiverName, setReceiverName] = useState("");
+  const [harvestId, setHarvestId] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   const totalValueCalc = (Number(sacksSold) || 0) * (Number(pricePerSack) || 0);
@@ -39,6 +42,7 @@ export default function RevenuesPage() {
       setRevenues(revData);
       setFarms(farmData);
       if (farmData.length > 0) setFarmId(farmData[0].id);
+      if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {
       toast.error("Erro ao carregar receitas.");
     } finally {
@@ -78,6 +82,7 @@ export default function RevenuesPage() {
       formData.append('date', date);
       formData.append('farmId', farmId);
       if (buyerName) formData.append('buyer_name', buyerName);
+      if (harvestId) formData.append('harvestId', harvestId);
       if (receiptFile) formData.append('receipt', receiptFile);
 
       await api.postForm('/revenues', formData, token || "");
@@ -167,15 +172,19 @@ export default function RevenuesPage() {
                 </tr>
               </thead>
               <tbody>
-                {revenues.length === 0 ? (
+                {revenues
+                  .filter(rev => !selectedHarvest || rev.harvest?.id === selectedHarvest.id)
+                  .length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
-                      Nenhuma venda registrada.
+                      Nenhuma venda registrada para esta safra.
                     </td>
                   </tr>
                 ) : (
-                  revenues.map((revenue) => (
-                    <tr key={revenue.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  revenues
+                    .filter(rev => !selectedHarvest || rev.harvest?.id === selectedHarvest.id)
+                    .map((revenue) => (
+                      <tr key={revenue.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
                         {new Date(revenue.date).toLocaleDateString('pt-BR')}
                       </td>
@@ -297,6 +306,22 @@ export default function RevenuesPage() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="harvest">Safra Vinculada</Label>
+                  <select 
+                    id="harvest"
+                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                    value={harvestId}
+                    onChange={e => setHarvestId(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Selecione a Safra...</option>
+                    {harvests.map(h => (
+                      <option key={h.id} value={h.id}>{h.name} {h.status === 'Fechada' ? '(Fechada)' : ''}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
