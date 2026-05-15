@@ -12,7 +12,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={40} height={40} className="rounded-lg" />
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
+              Agro<span className="text-coffee-600 dark:text-coffee-400">Cerrado</span><span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
           <nav className="hidden gap-6 md:flex">
@@ -189,7 +189,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Coffee className="h-6 w-6 text-farm-600" />
               <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                AgroCerrado<span className="text-farm-600">Café</span>
+                Agro<span className="text-coffee-700">Cerrado</span><span className="text-farm-600">Café</span>
               </span>
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">

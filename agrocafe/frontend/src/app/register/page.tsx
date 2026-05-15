@@ -47,7 +47,7 @@ export default function RegisterPage() {
               <Coffee className="h-6 w-6" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              AgroCerrado<span className="text-farm-600 dark:text-farm-500">Café</span>
+              Agro<span className="text-coffee-600 dark:text-coffee-400">Cerrado</span><span className="text-farm-600 dark:text-farm-500">Café</span>
             </span>
           </div>
 
@@ -146,7 +146,7 @@ export default function RegisterPage() {
         <div className="relative z-20 flex justify-end">
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold tracking-tight">
-              AgroCerrado<span className="text-farm-400">Café</span>
+              Agro<span className="text-coffee-300">Cerrado</span><span className="text-farm-400">Café</span>
             </span>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-md">
               <Coffee className="h-6 w-6" />
