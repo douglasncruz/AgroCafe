@@ -28,15 +28,22 @@ export class AppService implements OnModuleInit {
       await this.entityManager.delete(User, { email: 'duglas.cruz@agrocerradocafe.com.br' });
 
       for (const u of defaultUsers) {
-        let existingUser = await this.entityManager.findOne(User, { where: { email: u.email } });
-        if (!existingUser) {
-          existingUser = this.entityManager.create(User, {
+        let user = await this.entityManager.findOne(User, { where: { email: u.email } });
+        const hashedPassword = await bcrypt.hash(u.password, 10);
+        
+        if (!user) {
+          user = this.entityManager.create(User, {
             name: u.name,
             email: u.email,
-            password_hash: await bcrypt.hash(u.password, 10),
+            password_hash: hashedPassword,
           });
-          await this.entityManager.save(existingUser);
+          await this.entityManager.save(user);
           console.log(`✅ Usuário criado: ${u.email}`);
+        } else {
+          // Forçar atualização da senha para garantir que as credenciais solicitadas funcionem
+          user.password_hash = hashedPassword;
+          await this.entityManager.save(user);
+          console.log(`🔄 Senha atualizada para: ${u.email}`);
         }
       }
     } catch (error) {
