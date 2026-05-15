@@ -164,9 +164,9 @@ export default function Home() {
               <p className="text-lg text-slate-300 mb-10">
                 Junte-se a produtores que já estão aumentando a rentabilidade de suas lavouras com o AgroCerradoCafé.
               </p>
-              <Link href="/register">
+              <Link href="/demo">
                 <Button variant="primary" size="xl" className="rounded-full shadow-lg shadow-farm-500/20 px-8">
-                  Comece Gratuitamente Hoje
+                  Solicite uma demonstração gratuitamente
                 </Button>
               </Link>
             </div>
