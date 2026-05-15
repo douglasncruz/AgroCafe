@@ -21,7 +21,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post('import/seed-excel')
+  @Get('import/seed-excel')
   async seedExcel() {
     try {
       const filePath = path.join(process.cwd(), 'Despesas-Cafe.xlsx');
