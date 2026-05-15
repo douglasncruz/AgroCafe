@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { Farm } from '../../farms/entities/farm.entity';
 import { Plot } from '../../plots/entities/plot.entity';
+import { Harvest } from '../../harvests/entities/harvest.entity';
 
 @Entity('revenues')
 export class Revenue {
@@ -12,6 +13,9 @@ export class Revenue {
 
   @ManyToOne(() => Plot, { nullable: true })
   plot: Plot;
+
+  @ManyToOne(() => Harvest, (harvest) => harvest.revenues)
+  harvest: Harvest;
 
   @Column({ type: 'date' })
   date: Date;
