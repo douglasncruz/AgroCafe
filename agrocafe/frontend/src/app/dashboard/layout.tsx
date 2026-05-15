@@ -46,7 +46,7 @@ export default function DashboardLayout({
     router.push("/login");
   };
 
-  const isAdmin = user?.email === 'admin@agrocafe.com.br';
+  const isAdmin = user?.email === 'admin@agrocerradocafe.com.br';
 
   const NavItem = ({ href, icon: Icon, children, activeColor = "text-farm-600 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400" }: any) => {
     const isActive = pathname === href;
@@ -124,7 +124,7 @@ export default function DashboardLayout({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Produtor Rural</p>
-              <p className="text-xs text-slate-500 truncate">admin@agrocafe.com.br</p>
+              <p className="text-xs text-slate-500 truncate">admin@agrocerradocafe.com.br</p>
             </div>
           </div>
           

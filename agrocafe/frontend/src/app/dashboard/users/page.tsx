@@ -103,7 +103,7 @@ export default function UsersPage() {
                     {new Date(user.created_at).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {user.email !== 'admin@agrocafe.com.br' ? (
+                    {user.email !== 'admin@agrocerradocafe.com.br' ? (
                       <Button variant="outline" size="sm" onClick={() => openResetModal(user)}>
                         <KeyRound className="h-4 w-4 mr-2" /> Resetar Senha
                       </Button>
