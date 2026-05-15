@@ -33,7 +33,6 @@ export class AppController {
       const defaultUsers = [
         { name: 'Administrador Agro', email: 'admin@agrocerradocafe.com.br', password: 'admin' },
         { name: 'José Cruz', email: 'jose.cruz@agrocerradocafe.com.br', password: 'Mjd2725' },
-        { name: 'Zipora Cruz', email: 'zipora.cruz@agrocerradocafe.com.br', password: 'Agro@2026' },
         { name: 'Douglas Cruz', email: 'douglas.cruz@agrocerradocafe.com.br', password: 'Druida@011322' }
       ];
 
