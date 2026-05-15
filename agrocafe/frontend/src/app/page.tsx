@@ -179,7 +179,7 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <Coffee className="h-6 w-6 text-farm-600" />
+              <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={32} height={32} className="rounded-md" />
               <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Agro<span className="text-coffee-700">Cerrado</span><span className="text-farm-600">Café</span>
               </span>

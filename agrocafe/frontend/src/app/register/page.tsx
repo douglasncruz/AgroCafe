@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,8 +44,8 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 order-2 md:order-1">
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           <div className="flex items-center gap-2 md:hidden mb-8">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-farm-600 text-white shadow-lg shadow-farm-600/20">
-              <Coffee className="h-6 w-6" />
+            <div className="flex items-center justify-center rounded-lg">
+              <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={40} height={40} className="rounded-lg shadow-lg" />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               Agro<span className="text-coffee-600 dark:text-coffee-400">Cerrado</span><span className="text-farm-600 dark:text-farm-500">Café</span>
@@ -148,8 +149,8 @@ export default function RegisterPage() {
             <span className="text-xl font-bold tracking-tight">
               Agro<span className="text-coffee-300">Cerrado</span><span className="text-farm-400">Café</span>
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-md">
-              <Coffee className="h-6 w-6" />
+            <div className="flex items-center justify-center rounded-lg">
+              <Image src="/Logo-agrocafe.png" alt="AgroCafé logo" width={40} height={40} className="rounded-lg shadow-md" />
             </div>
           </div>
         </div>

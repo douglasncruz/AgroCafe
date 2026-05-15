@@ -184,7 +184,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm transition-transform hover:scale-[1.02]">
-                  <Coffee className="h-6 w-6 text-coffee-600" />
+                  <Image src="/Logo-agrocafe.png" alt="AgroCerradoCafé logo" width={24} height={24} className="rounded-sm" />
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Especialidade</p>
                     <p className="font-semibold text-slate-900 dark:text-white">Gestão Financeira para Cafeicultura</p>
