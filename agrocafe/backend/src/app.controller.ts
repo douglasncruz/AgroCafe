@@ -66,7 +66,7 @@ export class AppController {
           farm = this.entityManager.create(Farm, {
             name: farmName,
             total_area_hectares: 50,
-            user: user
+            user: user || undefined
           });
           farm = await this.entityManager.save(farm);
         }
@@ -90,7 +90,7 @@ export class AppController {
                 name: `Safra ${year}`,
                 farm: farm,
                 is_active: year === 2026,
-                status: year < 2026 ? 'Fechada' : 'Aberta'
+                status: year < 2026 ? HarvestStatus.ENCERRADA : HarvestStatus.ABERTA
               });
               harvest = await this.entityManager.save(harvest);
             }
