@@ -174,7 +174,9 @@ export default function ReportsPage() {
                     <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{row.label}</td>
                     <td className="px-6 py-3 text-right text-slate-600 dark:text-slate-400">{row.k === "sacksSold" ? row.v1 : formatCurrency(row.v1)}</td>
                     <td className="px-6 py-3 text-right font-bold text-slate-900 dark:text-white">{row.k === "sacksSold" ? row.v2 : formatCurrency(row.v2)}</td>
-                    <td className="px-6 py-3 text-center"><VariationBadge value={(compareData.variation as any)[row.k]} /></td>
+                    <td className="px-6 py-3 text-center">
+                      <VariationBadge value={compareData.variation[row.k as keyof typeof compareData.variation]} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
