@@ -22,6 +22,26 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('inspect-excel')
+  async inspectExcel() {
+    try {
+      const filePath = path.join(process.cwd(), 'Despesas-Cafe.xlsx');
+      const workbook = xlsx.readFile(filePath);
+      const res = {};
+      workbook.SheetNames.forEach(name => {
+        const sheet = workbook.Sheets[name];
+        const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+        res[name] = {
+          totalRows: data.length,
+          firstRows: data.slice(0, 10)
+        };
+      });
+      return res;
+    } catch (err: any) {
+      return { error: err.message, stack: err.stack };
+    }
+  }
+
   @Get('import/seed-excel')
   async seedExcel() {
     try {
