@@ -14,6 +14,8 @@ export default function PartnersPage() {
   const [partners, setPartners] = useState<any[]>([]);
   const [settlement, setSettlement] = useState<any>(null);
   
+  const { harvests, selectedHarvest } = useHarvest();
+  
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,7 +50,13 @@ export default function PartnersPage() {
     try {
       const pData = await api.get(`/partners?farmId=${farmId}`, token);
       setPartners(pData);
-      const sData = await api.get(`/partners/settlement?farmId=${farmId}`, token);
+      
+      let settlementUrl = `/partners/settlement?farmId=${farmId}`;
+      if (selectedHarvest) {
+        settlementUrl += `&harvestId=${selectedHarvest.id}`;
+      }
+      
+      const sData = await api.get(settlementUrl, token);
       setSettlement(sData);
     } catch (err) {
       toast.error("Erro ao carregar dados da fazenda.");
@@ -59,7 +67,7 @@ export default function PartnersPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedHarvest]);
 
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
@@ -180,7 +188,9 @@ export default function PartnersPage() {
 
             {/* RIGHT COLUMN - SETTLEMENT PANEL */}
             <div className="lg:col-span-2 space-y-4">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">Relatório de Acerto</h3>
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                Relatório de Acerto {selectedHarvest ? `- ${selectedHarvest.name}` : ''}
+              </h3>
               
               {settlement && partners.length > 0 ? (
                 <>
