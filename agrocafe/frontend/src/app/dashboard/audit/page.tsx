@@ -5,7 +5,6 @@ import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight, Upl
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
 import { toast } from "sonner";
-import Link from "next/link";
 
 export default function AuditPage() {
   const [alerts, setAlerts] = useState<any[]>([]);
