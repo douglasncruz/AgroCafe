@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight, UploadCloud, Database } from "lucide-react";
+import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight, Upload, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
 import { toast } from "sonner";
@@ -184,7 +184,7 @@ export default function AuditPage() {
       {/* --- IMPORTAÇÃO HISTÓRICA DE DADOS --- */}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
         <h3 className="font-semibold text-lg border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 flex items-center gap-2">
-          <Database className="h-5 w-5 text-farm-600" />
+          <Server className="h-5 w-5 text-farm-600" />
           Importação de Dados Históricos (ERP Legacy)
         </h3>
         <p className="text-sm text-slate-500 mb-4">
@@ -203,7 +203,7 @@ export default function AuditPage() {
               <span className="text-sm text-slate-500 font-medium truncate">
                 {importFile ? importFile.name : "Clique para selecionar a planilha (XLSX, XLS)"}
               </span>
-              <UploadCloud className="h-5 w-5 text-slate-400" />
+              <Upload className="h-5 w-5 text-slate-400" />
             </div>
           </div>
           <Button 
