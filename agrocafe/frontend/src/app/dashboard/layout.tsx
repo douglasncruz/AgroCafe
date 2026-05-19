@@ -34,7 +34,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { harvests, selectedHarvest, selectHarvest, hasOpenHarvest } = useHarvest();
+  const { farms, selectedFarm, selectFarm, harvests, selectedHarvest, selectHarvest, hasOpenHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
@@ -258,8 +258,42 @@ export default function DashboardLayout({
                 <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-950"></span>
               )}
             </button>
+            {/* Farm Selector */}
+            {farms.length > 0 && (
+              <div className="relative group">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                  <Map className="h-4 w-4 text-slate-400" />
+                  <span className="hidden sm:inline">{selectedFarm ? selectedFarm.name : "Selecione a Fazenda"}</span>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </button>
+                
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50 animate-fade-in">
+                  {farms.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => selectFarm(f.id)}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between ${
+                        selectedFarm?.id === f.id ? "font-bold text-farm-600" : "text-slate-600 dark:text-slate-400"
+                      }`}
+                    >
+                      <span>{f.name}</span>
+                      {selectedFarm?.id === f.id && <span className="text-farm-600">✓</span>}
+                    </button>
+                  ))}
+                  <div className="border-t border-slate-100 dark:border-slate-800 mt-1 pt-1">
+                    <Link
+                      href="/dashboard/plots"
+                      className="block px-4 py-2 text-sm text-farm-600 dark:text-farm-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      Gerenciar Fazendas →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
-            
+
             {/* Harvest Selector */}
             <div className="relative group">
               <button className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all ${
