@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { api } from "@/services/api";
+import { useHarvest } from "@/context/HarvestContext";
 
 export default function PartnersPage() {
   const [farms, setFarms] = useState<any[]>([]);
