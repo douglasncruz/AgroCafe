@@ -63,7 +63,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-20 mt-auto max-w-lg">
-          <h2 className="text-3xl font-bold mb-4">Bem-vindo de volta à sua fazenda digital</h2>
+          <h2 className="text-3xl font-bold mb-4">Bem-vindo à sua fazenda digital</h2>
           <p className="text-slate-300 text-lg">
             Acesse seus dados financeiros, controle seus talhões e acompanhe a evolução da sua safra de onde estiver.
           </p>
