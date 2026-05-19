@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight, Upload, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
