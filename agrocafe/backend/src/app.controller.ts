@@ -22,6 +22,45 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Get('inspect-excel')
+  async inspectExcel() {
+    try {
+      const fs = require('fs');
+      const filePaths = [
+        path.join(process.cwd(), 'Despesas-Cafe.xlsx'),
+        path.join(process.cwd(), '..', 'Despesas-Cafe.xlsx')
+      ];
+      
+      let filePath = '';
+      for (const p of filePaths) {
+        if (fs.existsSync(p)) {
+          filePath = p;
+          break;
+        }
+      }
+      
+      if (!filePath) {
+        return { error: 'Planilha não encontrada', searchedPaths: filePaths };
+      }
+      
+      const workbook = xlsx.readFile(filePath);
+      const result: any = {};
+      
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+        result[sheetName] = {
+          rowCount: data.length,
+          firstRows: data.slice(0, 8)
+        };
+      }
+      
+      return { filePath, sheets: result };
+    } catch (err: any) {
+      return { error: err.message };
+    }
+  }
+
   @Get('import/seed-excel')
   async seedExcel() {
     try {
