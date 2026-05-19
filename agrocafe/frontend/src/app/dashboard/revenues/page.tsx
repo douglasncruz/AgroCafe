@@ -183,8 +183,12 @@ export default function RevenuesPage() {
                   .filter(rev => !selectedHarvest || rev.harvest?.id === selectedHarvest.id)
                   .length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
-                      Nenhuma venda registrada para esta safra.
+                    <td colSpan={7} className="px-6 py-12 text-center border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex flex-col items-center justify-center text-slate-500">
+                        <TrendingUp className="h-12 w-12 text-slate-300 mb-3" />
+                        <p className="text-lg font-medium text-slate-900 dark:text-white">Nenhuma venda registrada</p>
+                        <p className="text-sm mt-1">Não há faturamento lançado para a safra selecionada.</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
