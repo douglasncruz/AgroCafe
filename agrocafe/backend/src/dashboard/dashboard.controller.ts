@@ -8,7 +8,10 @@ export class DashboardController {
 
   @UseGuards(JwtAuthGuard)
   @Get('summary')
-  async getSummary(@Query('harvestId') harvestId?: string) {
-    return this.dashboardService.getSummary(harvestId);
+  async getSummary(
+    @Query('harvestId') harvestId?: string,
+    @Query('farmId') farmId?: string
+  ) {
+    return this.dashboardService.getSummary(harvestId, farmId);
   }
 }

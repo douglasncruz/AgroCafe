@@ -15,7 +15,7 @@ export class DashboardService {
     @InjectRepository(Machine) private machineRepo: Repository<Machine>,
   ) {}
 
-  async getSummary(harvestId?: string) {
+  async getSummary(harvestId?: string, farmId?: string) {
     const expenseQuery = this.expenseRepository.createQueryBuilder('expense')
       .leftJoinAndSelect('expense.farm', 'farm');
 
@@ -23,6 +23,8 @@ export class DashboardService {
       expenseQuery
         .leftJoinAndSelect('expense.harvest', 'harvest')
         .where('harvest.id = :harvestId', { harvestId });
+    } else if (farmId) {
+      expenseQuery.where('farm.id = :farmId', { farmId });
     }
 
     const expenses = await expenseQuery.getMany();
@@ -33,15 +35,32 @@ export class DashboardService {
       revenueQuery
         .leftJoinAndSelect('revenue.harvest', 'harvest')
         .where('harvest.id = :harvestId', { harvestId });
+    } else if (farmId) {
+      revenueQuery
+        .leftJoin('revenue.farm', 'farm')
+        .where('farm.id = :farmId', { farmId });
     }
 
     const revenues = await revenueQuery.getMany();
 
-    const maintenances = await this.maintenanceRepo.createQueryBuilder('maint')
+    const maintenanceQuery = this.maintenanceRepo.createQueryBuilder('maint')
       .leftJoinAndSelect('maint.machine', 'machine')
-      .getMany();
+      .leftJoin('machine.farm', 'farm');
 
-    const machinesCount = await this.machineRepo.count();
+    if (farmId) {
+      maintenanceQuery.where('farm.id = :farmId', { farmId });
+    }
+
+    const maintenances = await maintenanceQuery.getMany();
+
+    const machineQuery = this.machineRepo.createQueryBuilder('machine')
+      .leftJoin('machine.farm', 'farm');
+
+    if (farmId) {
+      machineQuery.where('farm.id = :farmId', { farmId });
+    }
+
+    const machinesCount = await machineQuery.getCount();
 
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     
