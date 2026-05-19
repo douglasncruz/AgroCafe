@@ -13,7 +13,13 @@ describe('AppController', () => {
         AppService,
         {
           provide: EntityManager,
-          useValue: {},
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
+            create: jest.fn().mockImplementation((_, data) => data),
+            save: jest.fn().mockResolvedValue({}),
+            update: jest.fn().mockResolvedValue({}),
+            delete: jest.fn().mockResolvedValue({}),
+          },
         },
       ],
     }).compile();

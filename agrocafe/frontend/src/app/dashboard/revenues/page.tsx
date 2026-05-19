@@ -222,7 +222,7 @@ export default function RevenuesPage() {
                       <td className="px-6 py-4 text-center">
                         {revenue.receipt_url && (
                           <a 
-                            href={`http://localhost:3001${revenue.receipt_url}`} 
+                            href={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace('/api', '')}${revenue.receipt_url}`} 
                             target="_blank" 
                             rel="noreferrer"
                             className="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:bg-slate-100 hover:text-green-600 dark:hover:bg-slate-800 transition-colors mr-2"
