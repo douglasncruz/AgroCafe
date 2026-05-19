@@ -1,14 +1,18 @@
 const xlsx = require('xlsx');
 const path = require('path');
 
-const filePath = path.join(__dirname, '..', 'Despesas-Café.xlsx');
+const filePath = path.join(__dirname, '..', 'AgroCafe', 'Despesas-Cafe.xlsx');
 try {
   const workbook = xlsx.readFile(filePath);
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
-  const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
-  console.log("Colunas e primeiras linhas:");
-  console.log(JSON.stringify(data.slice(0, 5), null, 2));
+  console.log("=== SHEET NAMES ===");
+  console.log(workbook.SheetNames);
+  
+  for (const sheetName of workbook.SheetNames) {
+    console.log(`\n=== SHEET: ${sheetName} ===`);
+    const worksheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    console.log(JSON.stringify(data.slice(0, 3), null, 2));
+  }
 } catch (err) {
   console.error("Erro ao ler o arquivo Excel:", err.message);
 }

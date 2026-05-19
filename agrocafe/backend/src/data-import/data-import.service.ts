@@ -64,16 +64,6 @@ export class DataImportService {
     let expensesImported = 0;
     let revenuesImported = 0;
 
-    // Estabelece a chave de busca para o parceiro com base no nome da fazenda
-    let partnerKey = 'cruz';
-    if (farm.name.toLowerCase().includes('douglas')) {
-      partnerKey = 'douglas';
-    } else if (farm.name.toLowerCase().includes('cruz')) {
-      partnerKey = 'cruz';
-    } else {
-      partnerKey = farm.name.toLowerCase().split(' ')[0];
-    }
-
     const sheetNames = workbook.SheetNames;
 
     // 1. Processar Despesas pelas abas anuais ("Ano XXXX - Café")
@@ -122,12 +112,6 @@ export class DataImportService {
 
             if (!rawDesc || !rawPayer) continue;
             if (rawDesc.toLowerCase() === 'totais' || rawDesc.toLowerCase() === 'total') continue;
-
-            const payerLower = rawPayer.toLowerCase();
-            const isMatch = farm.name.toLowerCase().includes(payerLower) || 
-                            payerLower.includes(partnerKey) ||
-                            partnerKey.includes(payerLower);
-            if (!isMatch) continue;
 
             // Processar cada mês
             for (const month of monthsMap) {
@@ -210,12 +194,6 @@ export class DataImportService {
           const rawName = String(row[nameKey]).trim();
           const nameLower = rawName.toLowerCase();
           if (nameLower.includes('totais') || nameLower.includes('total')) continue;
-
-          // Verifica se o registro pertence à fazenda selecionada
-          const isMatch = farm.name.toLowerCase().includes(nameLower) || 
-                          nameLower.includes(partnerKey) ||
-                          partnerKey.includes(nameLower);
-          if (!isMatch) continue;
 
           // Percorrer anos como colunas na aba de Venda Café
           for (const key of Object.keys(row)) {
