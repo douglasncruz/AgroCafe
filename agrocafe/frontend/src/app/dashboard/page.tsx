@@ -9,7 +9,7 @@ import { useHarvest } from "@/context/HarvestContext";
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { harvests, selectedHarvest, selectHarvest } = useHarvest();
+  const { farms, selectedFarm, harvests, selectedHarvest, selectHarvest } = useHarvest();
 
   useEffect(() => {
     async function loadData() {
@@ -18,9 +18,17 @@ export default function DashboardPage() {
         const token = localStorage.getItem("@AgroCafe:token");
         if (!token) return;
         
-        const url = selectedHarvest 
-          ? `/dashboard/summary?harvestId=${selectedHarvest.id}` 
-          : '/dashboard/summary';
+        let url = '/dashboard/summary';
+        const params: string[] = [];
+        if (selectedHarvest) {
+          params.push(`harvestId=${selectedHarvest.id}`);
+        }
+        if (selectedFarm) {
+          params.push(`farmId=${selectedFarm.id}`);
+        }
+        if (params.length > 0) {
+          url += `?${params.join('&')}`;
+        }
           
         const summary = await api.get(url, token);
         setData(summary);
@@ -31,7 +39,7 @@ export default function DashboardPage() {
       }
     }
     loadData();
-  }, [selectedHarvest]);
+  }, [selectedHarvest, selectedFarm]);
 
   if (loading) {
     return (
@@ -58,7 +66,8 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel 360°</h1>
           <p className="text-slate-500 dark:text-slate-400">
-            {selectedHarvest ? `Análise consolidada da ${selectedHarvest.name}` : "Selecione uma safra para analisar"}
+            {selectedFarm ? `Fazenda: ${selectedFarm.name}` : "Selecione uma fazenda"} 
+            {selectedHarvest ? ` | Safra: ${selectedHarvest.name}` : ""}
           </p>
         </div>
         
