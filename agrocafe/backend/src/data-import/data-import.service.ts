@@ -40,7 +40,7 @@ export class DataImportService {
         start_date: new Date(`${year}-01-01`),
         end_date: new Date(`${year}-12-31`),
       });
-      await this.harvestRepo.save(harvest);
+      harvest = await this.harvestRepo.save(harvest);
       this.logger.log(`Safra ${year} criada automaticamente para a fazenda ${farm.name}.`);
     }
     return harvest;
