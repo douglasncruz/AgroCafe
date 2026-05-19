@@ -24,7 +24,10 @@ export class PartnersController {
   }
 
   @Get('settlement')
-  getSettlement(@Query('farmId') farmId: string) {
-    return this.partnersService.calculateSettlement(farmId);
+  getSettlement(
+    @Query('farmId') farmId: string,
+    @Query('harvestId') harvestId: string,
+  ) {
+    return this.partnersService.calculateSettlement(farmId, harvestId);
   }
 }

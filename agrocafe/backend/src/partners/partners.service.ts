@@ -34,11 +34,19 @@ export class PartnersService {
     return { success: true };
   }
 
-  async calculateSettlement(farmId: string) {
+  async calculateSettlement(farmId: string, harvestId?: string) {
     const partners = await this.findAll(farmId);
     
-    const expenses = await this.expenseRepo.find({ where: { farm: { id: farmId } } });
-    const revenues = await this.revenueRepo.find({ where: { farm: { id: farmId } } });
+    const expWhere: any = { farm: { id: farmId } };
+    const revWhere: any = { farm: { id: farmId } };
+
+    if (harvestId) {
+      expWhere.harvest = { id: harvestId };
+      revWhere.harvest = { id: harvestId };
+    }
+
+    const expenses = await this.expenseRepo.find({ where: expWhere });
+    const revenues = await this.revenueRepo.find({ where: revWhere });
 
     let totalExpenses = 0;
     let totalRevenues = 0;
