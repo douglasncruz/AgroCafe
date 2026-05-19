@@ -34,7 +34,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { harvests, selectedHarvest, selectHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
+  const { harvests, selectedHarvest, selectHarvest, hasOpenHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
