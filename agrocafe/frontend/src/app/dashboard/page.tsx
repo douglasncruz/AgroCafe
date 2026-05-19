@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat, ChevronDown } from "lucide-react";
 import { api } from "@/services/api";
 import { useHarvest } from "@/context/HarvestContext";
 
@@ -58,23 +58,34 @@ export default function DashboardPage() {
 
   const avgPrice = data.totalSacas > 0 ? data.totalReceitas / data.totalSacas : 0;
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      
-      {/* Seletor de Safra no Topo do Painel */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel 360°</h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            {selectedFarm ? `Fazenda: ${selectedFarm.name}` : "Selecione uma fazenda"} 
-            {selectedHarvest ? ` | Safra: ${selectedHarvest.name}` : ""}
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
-          {harvests.length === 0 && (
-            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">Nenhuma safra criada. <a href="/dashboard/harvests" className="underline">Criar safra →</a></p>
-          )}
+  const renderHarvestSelector = () => {
+    if (harvests.length === 0) {
+      return (
+        <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+          Nenhuma safra criada. <a href="/dashboard/harvests" className="underline">Criar safra →</a>
+        </p>
+      );
+    }
+
+    const allButton = (
+      <button
+        key="all"
+        onClick={() => selectHarvest('all')}
+        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+          selectedHarvest === null
+            ? "bg-farm-600 text-white shadow-lg shadow-farm-600/20 scale-105"
+            : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+        }`}
+      >
+        Todas as Safras
+        <span className="w-2 h-2 rounded-full bg-blue-400" />
+      </button>
+    );
+
+    if (harvests.length < 6) {
+      return (
+        <div className="flex flex-wrap gap-2 items-center">
+          {allButton}
           {harvests.map((h) => (
             <button
               key={h.id}
@@ -92,6 +103,83 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
+      );
+    }
+
+    const active = harvests.filter(h => h.status === 'Aberta');
+    const closed = harvests.filter(h => h.status !== 'Aberta').sort((a, b) => b.year - a.year);
+    
+    const quickHarvests = [
+      ...active,
+      ...closed.slice(0, 2)
+    ];
+
+    const otherHarvests = harvests;
+    const isSelectedInQuick = quickHarvests.some(q => q.id === selectedHarvest?.id);
+
+    return (
+      <div className="flex flex-wrap gap-2 items-center">
+        {allButton}
+        {quickHarvests.map((h) => (
+          <button
+            key={h.id}
+            onClick={() => selectHarvest(h.id)}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
+              selectedHarvest?.id === h.id
+                ? "bg-farm-600 text-white shadow-lg shadow-farm-600/20 scale-105"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+            }`}
+          >
+            {h.name}
+            <span className={`w-2 h-2 rounded-full ${
+              h.status === 'Aberta' ? 'bg-green-400' : h.status === 'Encerrada' ? 'bg-amber-400' : 'bg-slate-400'
+            }`} />
+          </button>
+        ))}
+
+        <div className="relative">
+          <select
+            value={isSelectedInQuick || selectedHarvest === null ? "quick" : selectedHarvest.id}
+            onChange={(e) => {
+              if (e.target.value !== "quick") {
+                selectHarvest(e.target.value);
+              }
+            }}
+            className={`appearance-none pr-10 pl-4 py-2 rounded-xl text-sm font-bold border-none outline-none cursor-pointer transition-all ${
+              !isSelectedInQuick && selectedHarvest !== null
+                ? "bg-farm-600 text-white shadow-lg shadow-farm-600/20"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+            }`}
+          >
+            <option value="quick" disabled>Outras Safras...</option>
+            {otherHarvests.map((h) => (
+              <option key={h.id} value={h.id} className="text-slate-800 dark:text-white bg-white dark:bg-slate-900">
+                {h.name} ({h.status})
+              </option>
+            ))}
+          </select>
+          <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none opacity-70 ${
+            !isSelectedInQuick && selectedHarvest !== null ? "text-white" : "text-slate-500"
+          }`} />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      
+      {/* Seletor de Safra no Topo do Painel */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel 360°</h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            {selectedFarm ? `Fazenda: ${selectedFarm.name}` : "Selecione uma fazenda"} 
+            {selectedHarvest ? ` | Safra: ${selectedHarvest.name}` : (harvests.length > 0 ? " | Safra: Todas as Safras" : " | Sem Safra")}
+          </p>
+        </div>
+        
+        {renderHarvestSelector()}
       </div>
       
       {/* Primeiros 4 Cards Principais */}

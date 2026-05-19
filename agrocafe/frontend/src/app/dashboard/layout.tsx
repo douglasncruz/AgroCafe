@@ -297,12 +297,12 @@ export default function DashboardLayout({
             {/* Harvest Selector */}
             <div className="relative group">
               <button className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all ${
-                hasOpenHarvest
+                selectedHarvest || hasOpenHarvest
                   ? "bg-farm-50 text-farm-700 dark:bg-farm-900/20 dark:text-farm-400 border-farm-200 dark:border-farm-800 hover:bg-farm-100"
                   : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100"
               }`}>
                 <Wheat className="h-4 w-4" />
-                <span className="hidden sm:inline">{selectedHarvest ? selectedHarvest.name : "Sem Safra"}</span>
+                <span className="hidden sm:inline">{selectedHarvest ? selectedHarvest.name : (harvests.length > 0 ? "Todas as Safras" : "Sem Safra")}</span>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </button>
               
@@ -316,6 +316,16 @@ export default function DashboardLayout({
                   </div>
                 ) : (
                   <>
+                    <button
+                      onClick={() => selectHarvest('all')}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between ${
+                        selectedHarvest === null ? "font-bold text-farm-600" : "text-slate-600 dark:text-slate-400"
+                      }`}
+                    >
+                      <span>Todas as Safras</span>
+                      {selectedHarvest === null && <span className="text-farm-600">✓</span>}
+                    </button>
+                    <div className="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                     {harvests.map((h) => (
                       <button
                         key={h.id}

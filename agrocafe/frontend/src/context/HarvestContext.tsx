@@ -112,6 +112,10 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
   };
 
   const selectHarvest = (harvestId: string) => {
+    if (!harvestId || harvestId === 'all') {
+      setSelectedHarvest(null);
+      return;
+    }
     const harvest = harvests.find(h => h.id === harvestId);
     if (harvest) {
       setSelectedHarvest(harvest);
