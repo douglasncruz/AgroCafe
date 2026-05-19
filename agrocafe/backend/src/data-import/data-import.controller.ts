@@ -4,7 +4,7 @@ import { DataImportService } from './data-import.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import * as multer from 'multer';
 
-@Controller('data-import')
+@Controller('api/data-import')
 @UseGuards(JwtAuthGuard)
 export class DataImportController {
   constructor(private readonly dataImportService: DataImportService) {}
