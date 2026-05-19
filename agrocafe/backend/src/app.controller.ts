@@ -7,7 +7,7 @@ import * as path from 'path';
 import { Farm } from './farms/entities/farm.entity';
 import { Expense } from './expenses/entities/expense.entity';
 import { User } from './users/entities/user.entity';
-import { Harvest } from './harvests/entities/harvest.entity';
+import { Harvest, HarvestStatus } from './harvests/entities/harvest.entity';
 import * as bcrypt from 'bcrypt';
 
 @Controller('api')
