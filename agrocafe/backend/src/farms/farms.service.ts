@@ -34,17 +34,20 @@ export class FarmsService {
     
     // SQLite sem CASCADE nativo precisa deletar os filhos manualmente
     try {
-      await this.dataSource.query(`DELETE FROM expenses WHERE "farmId" = ?`, [id]);
-      await this.dataSource.query(`DELETE FROM revenues WHERE "farmId" = ?`, [id]);
-      await this.dataSource.query(`DELETE FROM plots WHERE "farmId" = ?`, [id]);
-      await this.dataSource.query(`DELETE FROM partners WHERE "farmId" = ?`, [id]);
-      await this.dataSource.query(`DELETE FROM agrochemicals WHERE "farmId" = ?`, [id]);
+      const isPostgres = this.dataSource.options.type === 'postgres';
+      const param = isPostgres ? '$1' : '?';
+
+      await this.dataSource.query(`DELETE FROM expenses WHERE "farmId" = ${param}`, [id]);
+      await this.dataSource.query(`DELETE FROM revenues WHERE "farmId" = ${param}`, [id]);
+      await this.dataSource.query(`DELETE FROM plots WHERE "farmId" = ${param}`, [id]);
+      await this.dataSource.query(`DELETE FROM partners WHERE "farmId" = ${param}`, [id]);
+      await this.dataSource.query(`DELETE FROM agrochemicals WHERE "farmId" = ${param}`, [id]);
       
-      const machines = await this.dataSource.query(`SELECT id FROM machines WHERE "farmId" = ?`, [id]);
+      const machines = await this.dataSource.query(`SELECT id FROM machines WHERE "farmId" = ${param}`, [id]);
       for(const m of machines) {
-         await this.dataSource.query(`DELETE FROM maintenances WHERE "machineId" = ?`, [m.id]);
+         await this.dataSource.query(`DELETE FROM maintenances WHERE "machineId" = ${param}`, [m.id]);
       }
-      await this.dataSource.query(`DELETE FROM machines WHERE "farmId" = ?`, [id]);
+      await this.dataSource.query(`DELETE FROM machines WHERE "farmId" = ${param}`, [id]);
     } catch(e) {
       console.log("Ignored missing tables or delete constraints", e);
     }
