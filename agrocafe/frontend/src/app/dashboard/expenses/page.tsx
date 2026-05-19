@@ -13,7 +13,7 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { harvests, selectedHarvest, hasOpenHarvest } = useHarvest();
+  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
