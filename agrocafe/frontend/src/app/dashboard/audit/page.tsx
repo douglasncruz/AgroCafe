@@ -187,38 +187,66 @@ export default function AuditPage() {
           <Server className="h-5 w-5 text-farm-600" />
           Importação de Dados Históricos (ERP Legacy)
         </h3>
-        <p className="text-sm text-slate-500 mb-4">
-          Faça o upload da planilha <strong>Despesas-Cafe.xlsx</strong>. O motor inteligente criará automaticamente as safras de 2020 a 2026, categorizará as despesas, e importará a aba "Venda Café" distribuindo as receitas pela safra correspondente.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex-1 w-full relative">
-            <input 
-              type="file" 
-              accept=".xlsx,.xls,.csv" 
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <div className="w-full flex items-center justify-between p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-              <span className="text-sm text-slate-500 font-medium truncate">
-                {importFile ? importFile.name : "Clique para selecionar a planilha (XLSX, XLS)"}
-              </span>
-              <Upload className="h-5 w-5 text-slate-400" />
+        
+        {farms.length === 0 ? (
+          <div className="p-5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-900/50 text-red-900 dark:text-red-300 flex items-start gap-4 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-sm">Nenhuma Fazenda Cadastrada</h4>
+              <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+                Para realizar a importação dos dados históricos, você precisa cadastrar pelo menos uma fazenda no sistema. 
+                Isso é necessário para associar as despesas e receitas da planilha à fazenda correta.
+              </p>
+              <a 
+                href="/dashboard/plots" 
+                className="inline-block mt-3 text-xs font-bold text-red-800 dark:text-red-400 underline hover:text-red-950 dark:hover:text-red-300"
+              >
+                Cadastrar Fazenda em "Meus Talhões" →
+              </a>
             </div>
           </div>
-          <Button 
-            variant="primary" 
-            onClick={handleImport} 
-            disabled={!importFile || importing || !selectedFarmId}
-            className="w-full sm:w-auto"
-          >
-            {importing ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando (Isto pode demorar)</>
-            ) : (
-              "Iniciar Migração de Dados"
+        ) : (
+          <>
+            <p className="text-sm text-slate-500 mb-4">
+              Faça o upload da planilha <strong>Despesas-Cafe.xlsx</strong>. O motor inteligente criará automaticamente as safras de 2020 a 2026, categorizará as despesas, e importará a aba "Venda Café" distribuindo as receitas pela safra correspondente.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex-1 w-full relative">
+                <input 
+                  type="file" 
+                  accept=".xlsx,.xls,.csv" 
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="w-full flex items-center justify-between p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <span className="text-sm text-slate-500 font-medium truncate">
+                    {importFile ? importFile.name : "Clique para selecionar a planilha (XLSX, XLS)"}
+                  </span>
+                  <Upload className="h-5 w-5 text-slate-400" />
+                </div>
+              </div>
+              <Button 
+                variant="primary" 
+                onClick={handleImport} 
+                disabled={!importFile || importing || !selectedFarmId}
+                className="w-full sm:w-auto"
+              >
+                {importing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando (Isto pode demorar)</>
+                ) : (
+                  "Iniciar Migração de Dados"
+                )}
+              </Button>
+            </div>
+            
+            {!selectedFarmId && (
+              <p className="text-xs text-amber-600 mt-2 font-medium">
+                ⚠️ Selecione uma fazenda no menu superior da página para habilitar a migração.
+              </p>
             )}
-          </Button>
-        </div>
+          </>
+        )}
       </div>
       
       <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-sm text-slate-500">
