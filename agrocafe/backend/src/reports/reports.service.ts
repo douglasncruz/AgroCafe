@@ -25,7 +25,8 @@ export class ReportsService {
     const expenses = await this.expRepo.find({ where: { farm: { id: farmId } } });
     const revenues = await this.revRepo.find({ where: { farm: { id: farmId } } });
     const maintenances = await this.maintRepo.createQueryBuilder('m')
-      .leftJoinAndSelect('machine.farm', 'farm')
+      .leftJoinAndSelect('m.machine', 'machine')
+      .leftJoin('machine.farm', 'farm')
       .where('farm.id = :farmId', { farmId })
       .getMany();
     const partners = await this.partnerRepo.find({ where: { farm: { id: farmId } } });
