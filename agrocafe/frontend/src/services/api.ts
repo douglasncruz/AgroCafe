@@ -86,5 +86,26 @@ export const api = {
       throw new Error(data.message || 'Erro ao atualizar os dados');
     }
     return data;
+  },
+
+  async patch(endpoint: string, body: any, token?: string) {
+    const headers: any = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Erro ao atualizar os dados');
+    }
+    return data;
   }
 };
