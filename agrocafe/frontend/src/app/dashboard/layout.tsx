@@ -20,7 +20,9 @@ import {
   ChevronDown,
   ShieldAlert,
   ShieldCheck,
-  Wheat
+  Wheat,
+  AlertTriangle,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHarvest } from "@/context/HarvestContext";
@@ -32,14 +34,17 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { harvests, selectedHarvest, selectHarvest } = useHarvest();
+  const { harvests, selectedHarvest, selectHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("@AgroCafe:user");
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch { /* ignore parse errors */ }
     }
   }, []);
 
@@ -51,6 +56,16 @@ export default function DashboardLayout({
 
   const isAdmin = user?.email === 'admin@agrocerradocafe.com.br';
 
+  // Gerar iniciais do nome do usuário
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const NavItem = ({ href, icon: Icon, children, activeColor = "text-farm-600 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400" }: any) => {
     const isActive = pathname === href;
     return (
@@ -61,6 +76,7 @@ export default function DashboardLayout({
             ? activeColor
             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100"
         }`}
+        onClick={() => setSidebarOpen(false)}
       >
         <Icon className={`h-5 w-5 ${isActive ? "" : "opacity-70"}`} /> 
         {children}
@@ -91,6 +107,7 @@ export default function DashboardLayout({
           <div className="space-y-1">
             <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Visão Geral</p>
             <NavItem href="/dashboard" icon={LayoutDashboard}>Painel 360°</NavItem>
+            <NavItem href="/dashboard/harvests" icon={Wheat} activeColor="text-farm-700 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400">Safras</NavItem>
             <NavItem href="/dashboard/plots" icon={Map} activeColor="text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-500">Meus Talhões</NavItem>
             <NavItem href="/dashboard/agrochemicals" icon={FlaskConical} activeColor="text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400">Defensivos & Receitas</NavItem>
           </div>
@@ -122,12 +139,16 @@ export default function DashboardLayout({
         {/* User Profile Area */}
         <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 mb-2 cursor-pointer hover:border-farm-300 transition-colors">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-farm-500 to-coffee-600 flex items-center justify-center text-white font-bold shadow-md">
-              PR
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-farm-500 to-coffee-600 flex items-center justify-center text-white font-bold shadow-md text-sm">
+              {user ? getInitials(user.name) : "??"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Produtor Rural</p>
-              <p className="text-xs text-slate-500 truncate">admin@agrocerradocafe.com.br</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                {user?.name || "Carregando..."}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user?.email || ""}
+              </p>
             </div>
           </div>
           
@@ -164,7 +185,7 @@ export default function DashboardLayout({
               <Menu className="h-6 w-6" />
             </Button>
             
-            {/* Search Bar (Visual Only) */}
+            {/* Search Bar */}
             <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-800 focus-within:ring-2 focus-within:ring-farm-500/50 focus-within:border-farm-500 transition-all w-64 lg:w-96">
               <Search className="h-4 w-4 text-slate-400" />
               <input 
@@ -178,32 +199,84 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3 sm:gap-5">
             <button className="relative p-2 text-slate-400 hover:text-farm-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-950"></span>
+              {!hasOpenHarvest && (
+                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-950"></span>
+              )}
             </button>
             <div className="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
             
             {/* Harvest Selector */}
             <div className="relative group">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-farm-50 text-farm-700 dark:bg-farm-900/20 dark:text-farm-400 border border-farm-200 dark:border-farm-800 hover:bg-farm-100 transition-all">
+              <button className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border transition-all ${
+                hasOpenHarvest
+                  ? "bg-farm-50 text-farm-700 dark:bg-farm-900/20 dark:text-farm-400 border-farm-200 dark:border-farm-800 hover:bg-farm-100"
+                  : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100"
+              }`}>
                 <Wheat className="h-4 w-4" />
-                <span>{selectedHarvest ? selectedHarvest.name : "Selecionar Safra"}</span>
+                <span className="hidden sm:inline">{selectedHarvest ? selectedHarvest.name : "Sem Safra"}</span>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </button>
               
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50">
-                {harvests.map((h) => (
-                  <button
-                    key={h.id}
-                    onClick={() => selectHarvest(h.id)}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${selectedHarvest?.id === h.id ? "font-bold text-farm-600" : "text-slate-600 dark:text-slate-400"}`}
-                  >
-                    {h.name} {h.status === 'Fechada' ? '🔒' : ''}
-                  </button>
-                ))}
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50">
+                {harvests.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-slate-500">
+                    Nenhuma safra criada.
+                    <Link href="/dashboard/harvests" className="block mt-1 text-farm-600 font-medium hover:underline">
+                      Criar safra →
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    {harvests.map((h) => (
+                      <button
+                        key={h.id}
+                        onClick={() => selectHarvest(h.id)}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between ${
+                          selectedHarvest?.id === h.id ? "font-bold text-farm-600" : "text-slate-600 dark:text-slate-400"
+                        }`}
+                      >
+                        <span>{h.name}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          h.status === 'Aberta' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
+                          h.status === 'Encerrada' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' :
+                          'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500'
+                        }`}>
+                          {h.status === 'Aberta' ? '●' : h.status === 'Encerrada' ? '🔒' : '📦'}
+                        </span>
+                      </button>
+                    ))}
+                    <div className="border-t border-slate-100 dark:border-slate-800 mt-1 pt-1">
+                      <Link
+                        href="/dashboard/harvests"
+                        className="block px-4 py-2 text-sm text-farm-600 dark:text-farm-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        Gerenciar safras →
+                      </Link>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </header>
+
+        {/* Alert: No open harvest */}
+        {!hasOpenHarvest && !alertDismissed && harvests.length > 0 && (
+          <div className="bg-amber-50 dark:bg-amber-900/10 border-b border-amber-200 dark:border-amber-800 px-6 lg:px-10 py-3 flex items-center justify-between animate-fade-in">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                <strong>Atenção:</strong> Não existe safra aberta. Lançamentos de despesas e receitas estão bloqueados.{" "}
+                <Link href="/dashboard/harvests" className="underline font-bold hover:text-amber-900">
+                  Abrir nova safra →
+                </Link>
+              </p>
+            </div>
+            <button onClick={() => setAlertDismissed(true)} className="text-amber-600 hover:text-amber-800 p-1">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         {/* Page Content with custom scrollbar */}
         <main className="flex-1 p-6 lg:p-10 overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50">
