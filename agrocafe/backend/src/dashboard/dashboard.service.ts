@@ -15,30 +15,51 @@ export class DashboardService {
     @InjectRepository(Machine) private machineRepo: Repository<Machine>,
   ) {}
 
-  async getSummary(harvestId?: string, farmId?: string) {
+  async getSummary(farmId?: string, harvestId?: string, partnerId?: string) {
     const expenseQuery = this.expenseRepository.createQueryBuilder('expense')
-      .leftJoinAndSelect('expense.farm', 'farm');
+      .leftJoinAndSelect('expense.farm', 'farm')
+      .leftJoinAndSelect('expense.partner', 'partner');
 
     if (harvestId) {
       expenseQuery
         .leftJoinAndSelect('expense.harvest', 'harvest')
         .where('harvest.id = :harvestId', { harvestId });
+      
+      if (partnerId) {
+        expenseQuery.andWhere('partner.id = :partnerId', { partnerId });
+      }
     } else if (farmId) {
       expenseQuery.where('farm.id = :farmId', { farmId });
+      
+      if (partnerId) {
+        expenseQuery.andWhere('partner.id = :partnerId', { partnerId });
+      }
+    } else if (partnerId) {
+        expenseQuery.where('partner.id = :partnerId', { partnerId });
     }
 
     const expenses = await expenseQuery.getMany();
 
-    const revenueQuery = this.revenueRepository.createQueryBuilder('revenue');
+    const revenueQuery = this.revenueRepository.createQueryBuilder('revenue')
+      .leftJoinAndSelect('revenue.farm', 'farm')
+      .leftJoinAndSelect('revenue.partner', 'partner');
     
     if (harvestId) {
       revenueQuery
         .leftJoinAndSelect('revenue.harvest', 'harvest')
         .where('harvest.id = :harvestId', { harvestId });
+        
+      if (partnerId) {
+        revenueQuery.andWhere('partner.id = :partnerId', { partnerId });
+      }
     } else if (farmId) {
-      revenueQuery
-        .leftJoin('revenue.farm', 'farm')
-        .where('farm.id = :farmId', { farmId });
+      revenueQuery.where('farm.id = :farmId', { farmId });
+      
+      if (partnerId) {
+        revenueQuery.andWhere('partner.id = :partnerId', { partnerId });
+      }
+    } else if (partnerId) {
+        revenueQuery.where('partner.id = :partnerId', { partnerId });
     }
 
     const revenues = await revenueQuery.getMany();
@@ -83,7 +104,8 @@ export class DashboardService {
       const farmName = exp.farm ? exp.farm.name : 'Sem Nome';
       farmTotals[farmName] = (farmTotals[farmName] || 0) + val;
 
-      if (exp.payer_name) partnersMap[exp.payer_name] = (partnersMap[exp.payer_name] || 0) - val;
+      const pName = exp.partner ? exp.partner.name : exp.payer_name;
+      if (pName) partnersMap[pName] = (partnersMap[pName] || 0) - val;
     });
 
     maintenances.forEach(maint => {
@@ -103,7 +125,8 @@ export class DashboardService {
       monthlyData[m].receitas += val;
       totalSacas += Number(rev.sacks_sold);
 
-      if (rev.receiver_name) partnersMap[rev.receiver_name] = (partnersMap[rev.receiver_name] || 0) + val;
+      const pName = rev.partner ? rev.partner.name : rev.receiver_name;
+      if (pName) partnersMap[pName] = (partnersMap[pName] || 0) + val;
     });
 
     const colors = ["var(--color-farm-500)", "var(--color-coffee-500)", "var(--color-earth-500)", "var(--color-slate-500)", "#ef4444", "#f59e0b"];

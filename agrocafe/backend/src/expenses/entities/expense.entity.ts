@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { Farm } from '../../farms/entities/farm.entity';
 import { Plot } from '../../plots/entities/plot.entity';
 import { Harvest } from '../../harvests/entities/harvest.entity';
+import { Partner } from '../../partners/entities/partner.entity';
 
 @Entity('expenses')
 export class Expense {
@@ -16,6 +17,9 @@ export class Expense {
 
   @ManyToOne(() => Harvest, (harvest) => harvest.expenses)
   harvest: Harvest;
+
+  @ManyToOne(() => Partner, { nullable: true, onDelete: 'SET NULL' })
+  partner: Partner;
 
   @Column()
   description: string;

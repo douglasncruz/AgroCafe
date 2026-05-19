@@ -40,6 +40,7 @@ interface HarvestSummary {
   avgPricePerSack: number;
   expenseCount: number;
   revenueCount: number;
+  settlement?: any[];
 }
 
 export default function HarvestsPage() {
@@ -79,7 +80,16 @@ export default function HarvestsPage() {
         for (const h of allHarvests) {
           try {
             const summary = await api.get(`/harvests/${h.id}/summary`, token);
-            summaryMap[h.id] = summary;
+            let settlementData = [];
+            try {
+              const settlementRes = await api.get(`/partners/settlement?farmId=${farmData[0].id}&harvestId=${h.id}`, token);
+              if (settlementRes && settlementRes.settlement) {
+                settlementData = settlementRes.settlement;
+              }
+            } catch (e) {
+              console.log("No settlement data");
+            }
+            summaryMap[h.id] = { ...summary, settlement: settlementData };
           } catch {
             // Summary might fail for empty harvests, ignore
           }
@@ -310,6 +320,24 @@ export default function HarvestsPage() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-4 line-clamp-2">
                     {harvest.notes}
                   </p>
+                )}
+
+                {/* Acerto Societário */}
+                {summary && summary.settlement && summary.settlement.length > 0 && (
+                  <div className="mb-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Resumo de Sócios</p>
+                    <div className="space-y-2">
+                      {summary.settlement.map((s: any) => (
+                        <div key={s.name} className="flex justify-between items-center text-xs">
+                          <span className="font-medium text-slate-700 dark:text-slate-300">{s.name}</span>
+                          <span className={`font-bold ${s.balance > 0 ? "text-green-600" : s.balance < 0 ? "text-red-500" : "text-slate-500"}`}>
+                            {s.balance > 0 ? 'Recebe ' : s.balance < 0 ? 'Paga ' : ''}
+                            {formatCurrency(Math.abs(s.balance))}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {/* Actions */}

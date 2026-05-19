@@ -21,8 +21,26 @@ export class PartnersService {
     const partner = this.partnerRepo.create({
       name: dto.name,
       share_percentage: dto.share_percentage,
+      is_active: dto.is_active !== undefined ? dto.is_active : true,
+      contact_info: dto.contact_info,
+      notes: dto.notes,
       farm: { id: dto.farmId } as any
     });
+    return this.partnerRepo.save(partner);
+  }
+
+  async update(id: string, dto: any) {
+    const partner = await this.partnerRepo.findOne({ where: { id } });
+    if (!partner) throw new NotFoundException('Sócio não encontrado.');
+    
+    Object.assign(partner, {
+      name: dto.name ?? partner.name,
+      share_percentage: dto.share_percentage ?? partner.share_percentage,
+      is_active: dto.is_active ?? partner.is_active,
+      contact_info: dto.contact_info ?? partner.contact_info,
+      notes: dto.notes ?? partner.notes
+    });
+    
     return this.partnerRepo.save(partner);
   }
 
@@ -45,8 +63,8 @@ export class PartnersService {
       revWhere.harvest = { id: harvestId };
     }
 
-    const expenses = await this.expenseRepo.find({ where: expWhere });
-    const revenues = await this.revenueRepo.find({ where: revWhere });
+    const expenses = await this.expenseRepo.find({ where: expWhere, relations: ['partner'] });
+    const revenues = await this.revenueRepo.find({ where: revWhere, relations: ['partner'] });
 
     let totalExpenses = 0;
     let totalRevenues = 0;
@@ -61,8 +79,10 @@ export class PartnersService {
     expenses.forEach(e => {
       const val = Number(e.amount);
       totalExpenses += val;
-      // Match exactly by name
-      if (e.payer_name && partnerFinances[e.payer_name]) {
+      // Match by relation ID or fallback to payer_name for legacy
+      if (e.partner && partnerFinances[e.partner.name]) {
+        partnerFinances[e.partner.name].paid += val;
+      } else if (e.payer_name && partnerFinances[e.payer_name]) {
         partnerFinances[e.payer_name].paid += val;
       } else {
         // Track unassigned expenses? Not necessary unless requested, just count to total.
@@ -72,7 +92,9 @@ export class PartnersService {
     revenues.forEach(r => {
       const val = Number(r.total_value);
       totalRevenues += val;
-      if (r.receiver_name && partnerFinances[r.receiver_name]) {
+      if (r.partner && partnerFinances[r.partner.name]) {
+        partnerFinances[r.partner.name].received += val;
+      } else if (r.receiver_name && partnerFinances[r.receiver_name]) {
         partnerFinances[r.receiver_name].received += val;
       }
     });
@@ -94,5 +116,62 @@ export class PartnersService {
     });
 
     return { totalExpenses, totalRevenues, netProfit, settlement };
+  }
+
+  async getStatement(partnerId: string, harvestId?: string) {
+    const partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
+    if (!partner) throw new NotFoundException('Sócio não encontrado.');
+
+    const expWhere: any = { partner: { id: partnerId } };
+    const revWhere: any = { partner: { id: partnerId } };
+
+    if (harvestId) {
+      expWhere.harvest = { id: harvestId };
+      revWhere.harvest = { id: harvestId };
+    }
+
+    const expenses = await this.expenseRepo.find({ 
+      where: expWhere,
+      relations: ['harvest'],
+      order: { date: 'DESC' }
+    });
+    
+    const revenues = await this.revenueRepo.find({ 
+      where: revWhere,
+      relations: ['harvest'],
+      order: { date: 'DESC' }
+    });
+
+    const statement = [
+      ...expenses.map(e => ({
+        id: e.id,
+        type: 'expense',
+        date: e.date,
+        description: e.description,
+        category: e.category,
+        amount: Number(e.amount),
+        harvest: e.harvest?.name || 'Geral'
+      })),
+      ...revenues.map(r => ({
+        id: r.id,
+        type: 'revenue',
+        date: r.date,
+        description: `Venda Café - ${r.buyer_name || 'Geral'}`,
+        category: 'Receita',
+        amount: Number(r.total_value),
+        harvest: r.harvest?.name || 'Geral'
+      }))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const totalPaid = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const totalReceived = revenues.reduce((sum, r) => sum + Number(r.total_value), 0);
+
+    return {
+      partner,
+      totalPaid,
+      totalReceived,
+      netCash: totalReceived - totalPaid,
+      statement
+    };
   }
 }

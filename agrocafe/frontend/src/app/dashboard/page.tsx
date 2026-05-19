@@ -9,7 +9,27 @@ import { useHarvest } from "@/context/HarvestContext";
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [partners, setPartners] = useState<any[]>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string>("all");
   const { farms, selectedFarm, harvests, selectedHarvest, selectHarvest } = useHarvest();
+
+  useEffect(() => {
+    async function loadPartners() {
+      if (!selectedFarm) {
+        setPartners([]);
+        setSelectedPartnerId("all");
+        return;
+      }
+      try {
+        const token = localStorage.getItem("@AgroCafe:token");
+        const res = await api.get(`/partners?farmId=${selectedFarm.id}`, token || "");
+        setPartners(res);
+      } catch (err) {
+        console.error("Erro ao carregar sócios", err);
+      }
+    }
+    loadPartners();
+  }, [selectedFarm]);
 
   useEffect(() => {
     async function loadData() {
@@ -26,6 +46,9 @@ export default function DashboardPage() {
         if (selectedFarm) {
           params.push(`farmId=${selectedFarm.id}`);
         }
+        if (selectedPartnerId !== "all") {
+          params.push(`partnerId=${selectedPartnerId}`);
+        }
         if (params.length > 0) {
           url += `?${params.join('&')}`;
         }
@@ -39,7 +62,7 @@ export default function DashboardPage() {
       }
     }
     loadData();
-  }, [selectedHarvest, selectedFarm]);
+  }, [selectedHarvest, selectedFarm, selectedPartnerId]);
 
   if (loading) {
     return (
@@ -169,8 +192,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       
-      {/* Seletor de Safra no Topo do Painel */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      {/* Seletor de Safra e Sócio no Topo do Painel */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel 360°</h1>
           <p className="text-slate-500 dark:text-slate-400">
@@ -179,7 +202,24 @@ export default function DashboardPage() {
           </p>
         </div>
         
-        {renderHarvestSelector()}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {partners.length > 0 && (
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-sm font-medium text-slate-500">Sócio:</span>
+              <select 
+                value={selectedPartnerId}
+                onChange={e => setSelectedPartnerId(e.target.value)}
+                className="bg-transparent border-none outline-none text-sm font-bold text-slate-800 dark:text-white cursor-pointer"
+              >
+                <option value="all">Visão Consolidada</option>
+                {partners.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {renderHarvestSelector()}
+        </div>
       </div>
       
       {/* Primeiros 4 Cards Principais */}

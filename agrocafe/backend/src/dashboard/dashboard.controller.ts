@@ -10,8 +10,9 @@ export class DashboardController {
   @Get('summary')
   async getSummary(
     @Query('harvestId') harvestId?: string,
-    @Query('farmId') farmId?: string
+    @Query('farmId') farmId?: string,
+    @Query('partnerId') partnerId?: string,
   ) {
-    return this.dashboardService.getSummary(harvestId, farmId);
+    return this.dashboardService.getSummary(farmId, harvestId, partnerId);
   }
 }

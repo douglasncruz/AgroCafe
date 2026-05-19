@@ -14,4 +14,13 @@ export class Partner {
 
   @Column({ type: 'decimal', precision: 5, scale: 2 })
   share_percentage: number;
+
+  @Column({ default: true })
+  is_active: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  contact_info: string;
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
 }

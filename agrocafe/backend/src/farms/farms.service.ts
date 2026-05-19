@@ -3,6 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Farm } from './entities/farm.entity';
 import { User } from '../users/entities/user.entity';
+import { Expense } from '../expenses/entities/expense.entity';
+import { Revenue } from '../revenues/entities/revenue.entity';
+import { Plot } from '../plots/entities/plot.entity';
+import { Partner } from '../partners/entities/partner.entity';
+import { Agrochemical } from '../agrochemicals/entities/agrochemical.entity';
+import { Harvest } from '../harvests/entities/harvest.entity';
+import { Machine } from '../machines/entities/machine.entity';
+import { Maintenance } from '../machines/entities/maintenance.entity';
 
 @Injectable()
 export class FarmsService {
@@ -32,28 +40,26 @@ export class FarmsService {
     const farm = await this.farmRepo.findOne({ where: { id } });
     if (!farm) throw new NotFoundException('Fazenda não encontrada');
     
-    // SQLite sem CASCADE nativo precisa deletar os filhos manualmente
-    try {
-      const isPostgres = this.dataSource.options.type === 'postgres';
-      const param = isPostgres ? '$1' : '?';
-
-      await this.dataSource.query(`DELETE FROM expenses WHERE "farmId" = ${param}`, [id]);
-      await this.dataSource.query(`DELETE FROM revenues WHERE "farmId" = ${param}`, [id]);
-      await this.dataSource.query(`DELETE FROM plots WHERE "farmId" = ${param}`, [id]);
-      await this.dataSource.query(`DELETE FROM partners WHERE "farmId" = ${param}`, [id]);
-      await this.dataSource.query(`DELETE FROM agrochemicals WHERE "farmId" = ${param}`, [id]);
-      await this.dataSource.query(`DELETE FROM harvests WHERE "farmId" = ${param}`, [id]);
-      
-      const machines = await this.dataSource.query(`SELECT id FROM machines WHERE "farmId" = ${param}`, [id]);
+    await this.dataSource.transaction(async (manager) => {
+      // 1. Limpar dependências profundas (manutenções de máquinas)
+      const machines = await manager.find(Machine, { where: { farm: { id } } });
       for(const m of machines) {
-         await this.dataSource.query(`DELETE FROM maintenances WHERE "machineId" = ${param}`, [m.id]);
+         await manager.delete(Maintenance, { machine: { id: m.id } });
       }
-      await this.dataSource.query(`DELETE FROM machines WHERE "farmId" = ${param}`, [id]);
-    } catch(e) {
-      console.log("Ignored missing tables or delete constraints", e);
-    }
-    
-    await this.farmRepo.delete(id);
+      
+      // 2. Limpar dependências diretas da fazenda
+      await manager.delete(Expense, { farm: { id } });
+      await manager.delete(Revenue, { farm: { id } });
+      await manager.delete(Plot, { farm: { id } });
+      await manager.delete(Partner, { farm: { id } });
+      await manager.delete(Agrochemical, { farm: { id } });
+      await manager.delete(Machine, { farm: { id } });
+      await manager.delete(Harvest, { farm: { id } });
+      
+      // 3. Apagar a fazenda
+      await manager.delete(Farm, id);
+    });
+
     return { success: true, message: 'Fazenda e todos os seus dados foram apagados.' };
   }
 

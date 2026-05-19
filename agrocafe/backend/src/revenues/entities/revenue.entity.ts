@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { Farm } from '../../farms/entities/farm.entity';
 import { Plot } from '../../plots/entities/plot.entity';
 import { Harvest } from '../../harvests/entities/harvest.entity';
+import { Partner } from '../../partners/entities/partner.entity';
 
 @Entity('revenues')
 export class Revenue {
@@ -16,6 +17,9 @@ export class Revenue {
 
   @ManyToOne(() => Harvest, (harvest) => harvest.revenues)
   harvest: Harvest;
+
+  @ManyToOne(() => Partner, { nullable: true, onDelete: 'SET NULL' })
+  partner: Partner;
 
   @Column({ type: 'date' })
   date: Date;

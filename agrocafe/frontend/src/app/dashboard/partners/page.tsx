@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Loader2, Users, Receipt, HandCoins, Trash2 } from "lucide-react";
+import { Plus, Loader2, Users, Receipt, HandCoins, Trash2, Edit2, History, X, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,10 +21,19 @@ export default function PartnersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Statement Modal State
+  const [statementModalOpen, setStatementModalOpen] = useState(false);
+  const [statementData, setStatementData] = useState<any>(null);
+  const [loadingStatement, setLoadingStatement] = useState(false);
 
   // Form states
   const [name, setName] = useState("");
   const [share, setShare] = useState("");
+  const [contactInfo, setContactInfo] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
   const loadData = async (farmIdToLoad?: string) => {
     try {
@@ -78,25 +87,77 @@ export default function PartnersPage() {
     if(token) loadFarmData(id, token);
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
       const token = localStorage.getItem("@AgroCafe:token");
-      await api.post('/partners', {
+      const payload = {
         name,
         share_percentage: Number(share),
+        is_active: isActive,
+        contact_info: contactInfo,
+        notes,
         farmId: selectedFarmId
-      }, token || "");
-      toast.success("Sócio adicionado!");
+      };
+
+      if (editingId) {
+        await api.put(`/partners/${editingId}`, payload, token || "");
+        toast.success("Sócio atualizado com sucesso!");
+      } else {
+        await api.post('/partners', payload, token || "");
+        toast.success("Sócio adicionado!");
+      }
       setIsModalOpen(false);
-      setName("");
-      setShare("");
+      resetForm();
       loadFarmData(selectedFarmId, token || "");
     } catch (err) {
       toast.error("Erro ao salvar sócio.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openNewModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (p: any) => {
+    setEditingId(p.id);
+    setName(p.name);
+    setShare(p.share_percentage);
+    setIsActive(p.is_active);
+    setContactInfo(p.contact_info || "");
+    setNotes(p.notes || "");
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setName("");
+    setShare("");
+    setIsActive(true);
+    setContactInfo("");
+    setNotes("");
+  };
+
+  const viewStatement = async (partnerId: string) => {
+    setStatementModalOpen(true);
+    setLoadingStatement(true);
+    try {
+      const token = localStorage.getItem("@AgroCafe:token");
+      let url = `/partners/${partnerId}/statement`;
+      if (selectedHarvest) {
+        url += `?harvestId=${selectedHarvest.id}`;
+      }
+      const data = await api.get(url, token || "");
+      setStatementData(data);
+    } catch (err) {
+      toast.error("Erro ao carregar extrato.");
+      setStatementModalOpen(false);
+    } finally {
+      setLoadingStatement(false);
     }
   };
 
@@ -157,7 +218,7 @@ export default function PartnersPage() {
             <div className="lg:col-span-1 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">Quadro Societário</h3>
-                <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
+                <Button variant="outline" size="sm" onClick={openNewModal}>
                   <Plus className="h-4 w-4" /> Add
                 </Button>
               </div>
@@ -169,18 +230,34 @@ export default function PartnersPage() {
                   </div>
                 ) : (
                   partners.map(p => (
-                    <div key={p.id} className="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800 group">
-                      <div>
-                        <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
-                        <p className="text-xs text-slate-500">Participação: <span className="font-semibold text-farm-600">{p.share_percentage}%</span></p>
+                    <div key={p.id} className="flex flex-col p-4 bg-white rounded-xl border border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-900 dark:text-white">{p.name}</p>
+                            {!p.is_active && (
+                              <span className="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-slate-100 text-slate-500">Inativo</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">Participação: <span className="font-semibold text-farm-600">{p.share_percentage}%</span></p>
+                          {p.contact_info && <p className="text-xs text-slate-400 mt-0.5">{p.contact_info}</p>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => viewStatement(p.id)} title="Extrato Financeiro" className="p-2 text-slate-400 hover:text-farm-600 hover:bg-farm-50 rounded-md">
+                            <History className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => openEditModal(p)} className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md">
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(p.id, p.name)}
+                            disabled={deletingId === p.id}
+                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md"
+                          >
+                            {deletingId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </div>
-                      <button 
-                        onClick={() => handleDelete(p.id, p.name)}
-                        disabled={deletingId === p.id}
-                        className="p-2 text-slate-400 hover:text-red-600 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {deletingId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                      </button>
                     </div>
                   ))
                 )}
@@ -264,25 +341,135 @@ export default function PartnersPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Novo Sócio</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">×</button>
+              <h3 className="text-lg font-bold">{editingId ? "Editar Sócio" : "Novo Sócio"}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>Nome do Sócio</Label>
-                <Input required placeholder="Ex: João da Silva" value={name} onChange={e => setName(e.target.value)} />
+            <form onSubmit={handleCreateOrUpdate} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 col-span-2">
+                  <Label>Nome do Sócio *</Label>
+                  <Input required placeholder="Ex: João da Silva" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Participação (%) *</Label>
+                  <Input type="number" step="0.1" required placeholder="Ex: 50" value={share} onChange={e => setShare(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-farm-500 dark:bg-slate-900 dark:border-slate-800"
+                    value={isActive ? "true" : "false"}
+                    onChange={e => setIsActive(e.target.value === "true")}
+                  >
+                    <option value="true">Ativo</option>
+                    <option value="false">Inativo</option>
+                  </select>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Participação (%)</Label>
-                <Input type="number" step="0.1" required placeholder="Ex: 50" value={share} onChange={e => setShare(e.target.value)} />
+                <Label>Informações de Contato</Label>
+                <Input placeholder="Telefone ou Email" value={contactInfo} onChange={e => setContactInfo(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Observações</Label>
+                <textarea 
+                  className="flex w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-farm-500 dark:bg-slate-900 dark:border-slate-800"
+                  rows={3} 
+                  placeholder="Informações adicionais..." 
+                  value={notes} 
+                  onChange={e => setNotes(e.target.value)} 
+                />
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                <Button type="submit" variant="primary" disabled={saving}>Salvar Sócio</Button>
+                <Button type="submit" variant="primary" disabled={saving}>
+                  {saving ? "Salvando..." : (editingId ? "Salvar" : "Adicionar")}
+                </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Statement Modal */}
+      {statementModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-scale-in border border-slate-200 dark:border-slate-800">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <History className="h-5 w-5 text-farm-600" />
+                  Extrato Financeiro
+                </h3>
+                {statementData && (
+                  <p className="text-sm text-slate-500 mt-1">Sócio: <span className="font-semibold text-slate-900 dark:text-white">{statementData.partner.name}</span></p>
+                )}
+              </div>
+              <button onClick={() => setStatementModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"><X className="h-5 w-5" /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {loadingStatement ? (
+                <div className="flex py-20 items-center justify-center"><Loader2 className="animate-spin text-farm-600 h-8 w-8" /></div>
+              ) : statementData ? (
+                <>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+                      <p className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1"><TrendingUp className="h-4 w-4 text-green-500"/> Total Recebido</p>
+                      <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(statementData.totalReceived)}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+                      <p className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1"><TrendingDown className="h-4 w-4 text-red-500"/> Total Pago</p>
+                      <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(statementData.totalPaid)}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+                      <p className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1"><HandCoins className="h-4 w-4 text-farm-500"/> Saldo em Mãos</p>
+                      <p className={`text-xl font-bold mt-1 ${statementData.netCash > 0 ? 'text-green-600' : statementData.netCash < 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                        {formatCurrency(statementData.netCash)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-700">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 text-xs uppercase">
+                        <tr>
+                          <th className="px-4 py-3 text-left">Data</th>
+                          <th className="px-4 py-3 text-left">Descrição</th>
+                          <th className="px-4 py-3 text-left">Safra</th>
+                          <th className="px-4 py-3 text-right">Valor</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {statementData.statement.length === 0 ? (
+                          <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Nenhuma movimentação encontrada.</td></tr>
+                        ) : (
+                          statementData.statement.map((s: any) => (
+                            <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                              <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-400">
+                                {new Date(s.date).toLocaleDateString('pt-BR')}
+                              </td>
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-slate-900 dark:text-white">{s.description}</p>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider">{s.category}</p>
+                              </td>
+                              <td className="px-4 py-3 text-slate-500">
+                                {s.harvest}
+                              </td>
+                              <td className={`px-4 py-3 text-right font-bold whitespace-nowrap ${s.type === 'revenue' ? 'text-green-600' : 'text-red-500'}`}>
+                                {s.type === 'revenue' ? '+' : '-'}{formatCurrency(s.amount)}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

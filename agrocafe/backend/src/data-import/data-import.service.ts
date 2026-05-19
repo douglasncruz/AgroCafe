@@ -46,6 +46,24 @@ export class DataImportService {
     return harvest;
   }
 
+  private async getOrCreatePartner(name: string, farm: Farm): Promise<Partner | null> {
+    const formattedName = name.trim();
+    if (!formattedName) return null;
+
+    let partner = await this.partnerRepo.findOne({ where: { name: formattedName, farm: { id: farm.id } } });
+    if (!partner) {
+      partner = this.partnerRepo.create({
+        name: formattedName,
+        share_percentage: 50, // Default 50% based on assumption of 2 partners
+        farm: farm,
+        is_active: true
+      });
+      partner = await this.partnerRepo.save(partner);
+      this.logger.log(`Sócio ${formattedName} criado automaticamente para a fazenda ${farm.name} com 50% de participação.`);
+    }
+    return partner;
+  }
+
   async importExcel(fileBuffer: Buffer, farmId: string) {
     if (!farmId) {
       throw new BadRequestException('farmId é obrigatório para importação.');
@@ -113,6 +131,8 @@ export class DataImportService {
             if (!rawDesc || !rawPayer) continue;
             if (rawDesc.toLowerCase() === 'totais' || rawDesc.toLowerCase() === 'total') continue;
 
+            const targetPartner = await this.getOrCreatePartner(rawPayer, farm);
+
             // Processar cada mês
             for (const month of monthsMap) {
               const monthKey = Object.keys(row).find(k => k.toLowerCase().trim() === month.name);
@@ -155,6 +175,7 @@ export class DataImportService {
                   amount: parsedVal,
                   category: category,
                   payer_name: rawPayer,
+                  partner: targetPartner,
                   farm: farm,
                   harvest: targetHarvest,
                   status: 'Pago'
@@ -192,6 +213,8 @@ export class DataImportService {
           const rawName = String(row[nameKey]).trim();
           const nameLower = rawName.toLowerCase();
           if (nameLower.includes('totais') || nameLower.includes('total')) continue;
+          
+          const targetPartner = await this.getOrCreatePartner(rawName, farm);
 
           // Percorrer anos como colunas na aba de Venda Café
           for (const key of Object.keys(row)) {
@@ -224,6 +247,7 @@ export class DataImportService {
                 total_value: parsedVal,
                 buyer_name: 'Venda Café (Carga Excel)',
                 receiver_name: rawName,
+                partner: targetPartner,
                 farm: farm,
                 harvest: targetHarvest
               });
