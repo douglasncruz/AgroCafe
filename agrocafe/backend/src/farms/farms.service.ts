@@ -42,6 +42,7 @@ export class FarmsService {
       await this.dataSource.query(`DELETE FROM plots WHERE "farmId" = ${param}`, [id]);
       await this.dataSource.query(`DELETE FROM partners WHERE "farmId" = ${param}`, [id]);
       await this.dataSource.query(`DELETE FROM agrochemicals WHERE "farmId" = ${param}`, [id]);
+      await this.dataSource.query(`DELETE FROM harvests WHERE "farmId" = ${param}`, [id]);
       
       const machines = await this.dataSource.query(`SELECT id FROM machines WHERE "farmId" = ${param}`, [id]);
       for(const m of machines) {
