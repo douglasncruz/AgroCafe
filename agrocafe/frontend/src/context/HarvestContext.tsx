@@ -11,6 +11,18 @@ export interface Farm {
   state?: string;
 }
 
+export interface Harvest {
+  id: string;
+  name: string;
+  year: number;
+  start_date: string;
+  end_date: string | null;
+  is_active: boolean;
+  status: string;
+  notes?: string;
+  farm?: Farm;
+}
+
 interface HarvestContextType {
   farms: Farm[];
   selectedFarm: Farm | null;
