@@ -20,7 +20,9 @@ export class DashboardService {
       .leftJoinAndSelect('expense.farm', 'farm');
 
     if (harvestId) {
-      expenseQuery.where('expense.harvest = :harvestId', { harvestId });
+      expenseQuery
+        .leftJoinAndSelect('expense.harvest', 'harvest')
+        .where('harvest.id = :harvestId', { harvestId });
     }
 
     const expenses = await expenseQuery.getMany();
@@ -28,7 +30,9 @@ export class DashboardService {
     const revenueQuery = this.revenueRepository.createQueryBuilder('revenue');
     
     if (harvestId) {
-      revenueQuery.where('revenue.harvest = :harvestId', { harvestId });
+      revenueQuery
+        .leftJoinAndSelect('revenue.harvest', 'harvest')
+        .where('harvest.id = :harvestId', { harvestId });
     }
 
     const revenues = await revenueQuery.getMany();
