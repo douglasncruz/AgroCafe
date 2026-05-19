@@ -6,14 +6,20 @@ import { api } from '@/services/api';
 interface Harvest {
   id: string;
   name: string;
+  year: number;
   is_active: boolean;
-  status: string;
+  status: string; // 'Aberta' | 'Encerrada' | 'Arquivada'
+  start_date: string;
+  end_date: string | null;
+  notes: string | null;
 }
 
 interface HarvestContextType {
   harvests: Harvest[];
   selectedHarvest: Harvest | null;
+  activeOpenHarvest: Harvest | null; // A safra que está com status "Aberta"
   loading: boolean;
+  hasOpenHarvest: boolean;
   selectHarvest: (harvestId: string) => void;
   refreshHarvests: () => Promise<void>;
 }
@@ -33,7 +39,7 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // Buscamos a fazenda do usuário (simplificado para a primeira fazenda encontrada)
+      // Buscamos a fazenda do usuário
       const farms = await api.get('/farms', token);
       if (farms && farms.length > 0) {
         const farmId = farms[0].id;
@@ -46,6 +52,8 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
           setSelectedHarvest(active);
         } else if (data.length > 0) {
           setSelectedHarvest(data[0]);
+        } else {
+          setSelectedHarvest(null);
         }
       }
     } catch (err) {
@@ -66,8 +74,20 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // A safra com status "Aberta" (pode lançar novos registros)
+  const activeOpenHarvest = harvests.find(h => h.status === 'Aberta') || null;
+  const hasOpenHarvest = !!activeOpenHarvest;
+
   return (
-    <HarvestContext.Provider value={{ harvests, selectedHarvest, loading, selectHarvest, refreshHarvests: fetchHarvests }}>
+    <HarvestContext.Provider value={{
+      harvests,
+      selectedHarvest,
+      activeOpenHarvest,
+      loading,
+      hasOpenHarvest,
+      selectHarvest,
+      refreshHarvests: fetchHarvests,
+    }}>
       {children}
     </HarvestContext.Provider>
   );
