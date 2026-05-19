@@ -13,7 +13,7 @@ export default function RevenuesPage() {
   const [revenues, setRevenues] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { harvests, selectedHarvest } = useHarvest();
+  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -42,7 +42,8 @@ export default function RevenuesPage() {
       setRevenues(revData);
       setFarms(farmData);
       if (farmData.length > 0) setFarmId(farmData[0].id);
-      if (selectedHarvest) setHarvestId(selectedHarvest.id);
+      if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
+      else if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {
       toast.error("Erro ao carregar receitas.");
     } finally {
@@ -121,7 +122,13 @@ export default function RevenuesPage() {
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">Registre as vendas de sacas e acompanhe seus lucros</p>
           </div>
-          <Button variant="primary" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setIsModalOpen(true)}>
+          <Button
+            variant="primary"
+            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => setIsModalOpen(true)}
+            disabled={!hasOpenHarvest}
+            title={!hasOpenHarvest ? 'Abra uma safra antes de registrar vendas' : ''}
+          >
             <Plus className="mr-2 h-4 w-4" /> Nova Venda
           </Button>
         </div>
@@ -318,8 +325,8 @@ export default function RevenuesPage() {
                     required
                   >
                     <option value="" disabled>Selecione a Safra...</option>
-                    {harvests.map(h => (
-                      <option key={h.id} value={h.id}>{h.name} {h.status === 'Fechada' ? '(Fechada)' : ''}</option>
+                    {harvests.filter(h => h.status === 'Aberta').map(h => (
+                      <option key={h.id} value={h.id}>{h.name}</option>
                     ))}
                   </select>
                 </div>

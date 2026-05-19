@@ -193,7 +193,7 @@ export default function ExpensesPage() {
                     <td className="px-6 py-4 text-center">
                       {expense.receipt_url && (
                         <a 
-                          href={`http://localhost:3001${expense.receipt_url}`} 
+                          href={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace('/api', '')}${expense.receipt_url}`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="inline-flex items-center justify-center p-2 rounded-md text-farm-600 bg-farm-50 hover:bg-farm-100 dark:bg-farm-900/30 dark:text-farm-400 dark:hover:bg-farm-900/50 transition-colors mr-2"
