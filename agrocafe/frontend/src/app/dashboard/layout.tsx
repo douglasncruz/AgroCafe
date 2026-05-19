@@ -38,6 +38,8 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string} | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("@AgroCafe:user");
@@ -56,7 +58,6 @@ export default function DashboardLayout({
 
   const isAdmin = user?.email === 'admin@agrocerradocafe.com.br';
 
-  // Gerar iniciais do nome do usuário
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -64,6 +65,31 @@ export default function DashboardLayout({
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const menuItems = [
+    { title: "Painel 360°", href: "/dashboard", tags: ["inicio", "home", "dashboard"] },
+    { title: "Safras", href: "/dashboard/harvests", tags: ["safras", "ciclos", "anos"] },
+    { title: "Meus Talhões", href: "/dashboard/plots", tags: ["fazendas", "talhoes", "areas"] },
+    { title: "Defensivos & Receitas", href: "/dashboard/agrochemicals", tags: ["venenos", "defensivos", "agronomico", "receitas"] },
+    { title: "Receitas (Vendas)", href: "/dashboard/revenues", tags: ["vendas", "cafe", "receitas", "dinheiro"] },
+    { title: "Despesas & Custos", href: "/dashboard/expenses", tags: ["custos", "compras", "despesas", "pagar"] },
+    { title: "Maquinário & Frota", href: "/dashboard/machines", tags: ["trator", "manutencao", "frota", "maquinas"] },
+    { title: "Sócios & Acertos", href: "/dashboard/partners", tags: ["socios", "acerto", "divisao"] },
+    { title: "Relatórios (DRE)", href: "/dashboard/reports", tags: ["dre", "relatorio", "lucro", "resultado"] },
+  ];
+
+  const searchResults = menuItems.filter(item => 
+    searchQuery && (
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      item.tags.some(tag => tag.includes(searchQuery.toLowerCase()))
+    )
+  );
+
+  const handleSearchNav = (href: string) => {
+    setSearchQuery("");
+    setShowSearchResults(false);
+    router.push(href);
   };
 
   const NavItem = ({ href, icon: Icon, children, activeColor = "text-farm-600 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400" }: any) => {
@@ -186,13 +212,42 @@ export default function DashboardLayout({
             </Button>
             
             {/* Search Bar */}
-            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-800 focus-within:ring-2 focus-within:ring-farm-500/50 focus-within:border-farm-500 transition-all w-64 lg:w-96">
+            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-800 focus-within:ring-2 focus-within:ring-farm-500/50 focus-within:border-farm-500 transition-all w-64 lg:w-96 relative">
               <Search className="h-4 w-4 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Buscar talhões, notas ou máquinas..." 
+                placeholder="Buscar páginas, módulos..." 
                 className="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setShowSearchResults(e.target.value.length > 0);
+                }}
+                onFocus={() => setShowSearchResults(searchQuery.length > 0)}
               />
+              
+              {showSearchResults && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden z-50">
+                  {searchResults.length > 0 ? (
+                    <div className="py-2">
+                      <p className="px-4 py-1 text-xs font-bold text-slate-400 uppercase">Ir para:</p>
+                      {searchResults.map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSearchNav(item.href)}
+                          className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          {item.title}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-slate-500">
+                      Nenhum módulo encontrado.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
