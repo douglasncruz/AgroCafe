@@ -85,7 +85,7 @@ export default function FarmsPage() {
       resetForm();
       loadData();
     } catch (err: any) {
-      toast.error(editingId ? "Erro ao atualizar fazenda." : "Erro ao salvar fazenda.");
+      toast.error(err.message || (editingId ? "Erro ao atualizar fazenda." : "Erro ao salvar fazenda."));
     } finally {
       setSaving(false);
     }
