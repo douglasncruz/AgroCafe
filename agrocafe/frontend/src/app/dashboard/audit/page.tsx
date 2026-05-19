@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight } from "lucide-react";
+import { ShieldAlert, AlertTriangle, CheckCircle, Loader2, Info, ArrowRight, UploadCloud, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ export default function AuditPage() {
   const [loading, setLoading] = useState(true);
   const [farms, setFarms] = useState<any[]>([]);
   const [selectedFarmId, setSelectedFarmId] = useState<string>("");
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
 
   useEffect(() => {
     loadFarms();
@@ -70,6 +72,47 @@ export default function AuditPage() {
       case 'medium': return <Info className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />;
       case 'low': return <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />;
       default: return <Info className="h-6 w-6" />;
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImportFile(e.target.files[0]);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile || !selectedFarmId) return;
+    setImporting(true);
+    const formData = new FormData();
+    formData.append("file", importFile);
+    formData.append("farmId", selectedFarmId);
+
+    try {
+      const token = localStorage.getItem("@AgroCafe:token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/data-import/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Erro na importação.");
+      }
+
+      const result = await res.json();
+      toast.success(result.message);
+      if (result.errors && result.errors.length > 0) {
+        toast.warning(`${result.errors.length} inconsistências encontradas. Cheque o console.`);
+        console.warn("Import Errors:", result.errors);
+      }
+      setImportFile(null);
+      loadAudit(); // reload audit data
+    } catch (err: any) {
+      toast.error(err.message || "Falha grave na importação do arquivo.");
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -137,6 +180,46 @@ export default function AuditPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* --- IMPORTAÇÃO HISTÓRICA DE DADOS --- */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+        <h3 className="font-semibold text-lg border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 flex items-center gap-2">
+          <Database className="h-5 w-5 text-farm-600" />
+          Importação de Dados Históricos (ERP Legacy)
+        </h3>
+        <p className="text-sm text-slate-500 mb-4">
+          Faça o upload da planilha <strong>Despesas-Cafe.xlsx</strong>. O motor inteligente criará automaticamente as safras de 2020 a 2026, categorizará as despesas, e importará a aba "Venda Café" distribuindo as receitas pela safra correspondente.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex-1 w-full relative">
+            <input 
+              type="file" 
+              accept=".xlsx,.xls,.csv" 
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div className="w-full flex items-center justify-between p-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+              <span className="text-sm text-slate-500 font-medium truncate">
+                {importFile ? importFile.name : "Clique para selecionar a planilha (XLSX, XLS)"}
+              </span>
+              <UploadCloud className="h-5 w-5 text-slate-400" />
+            </div>
+          </div>
+          <Button 
+            variant="primary" 
+            onClick={handleImport} 
+            disabled={!importFile || importing || !selectedFarmId}
+            className="w-full sm:w-auto"
+          >
+            {importing ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando (Isto pode demorar)</>
+            ) : (
+              "Iniciar Migração de Dados"
+            )}
+          </Button>
+        </div>
       </div>
       
       <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-sm text-slate-500">
