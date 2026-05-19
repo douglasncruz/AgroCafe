@@ -1,7 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, Index } from 'typeorm';
 import { Farm } from '../../farms/entities/farm.entity';
 import { Expense } from '../../expenses/entities/expense.entity';
 import { Revenue } from '../../revenues/entities/revenue.entity';
+
+export enum HarvestStatus {
+  ABERTA = 'Aberta',
+  ENCERRADA = 'Encerrada',
+  ARQUIVADA = 'Arquivada',
+}
 
 @Entity('harvests')
 export class Harvest {
@@ -11,19 +17,26 @@ export class Harvest {
   @Column()
   name: string; // ex: "Safra 2024" ou "Safra 2024/25"
 
+  @Column({ type: 'int', nullable: true })
+  year: number; // Ano principal da safra (ex: 2024)
+
   @Column({ type: 'date', nullable: true })
   start_date: Date;
 
   @Column({ type: 'date', nullable: true })
   end_date: Date;
 
+  @Index()
   @Column({ default: true })
   is_active: boolean;
 
-  @Column({ default: 'Aberta' })
-  status: string; // 'Aberta' | 'Fechada'
+  @Column({ type: 'varchar', length: 20, default: HarvestStatus.ABERTA })
+  status: HarvestStatus; // 'Aberta' | 'Encerrada' | 'Arquivada'
 
-  @ManyToOne(() => Farm, (farm) => farm.harvests)
+  @Column({ type: 'text', nullable: true })
+  notes: string; // Observações livres
+
+  @ManyToOne(() => Farm, (farm) => farm.harvests, { onDelete: 'CASCADE' })
   farm: Farm;
 
   @OneToMany(() => Expense, (expense) => expense.harvest)
