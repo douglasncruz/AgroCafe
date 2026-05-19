@@ -13,6 +13,7 @@ export default function AuditPage() {
   const [selectedFarmId, setSelectedFarmId] = useState<string>("");
   const [importing, setImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     loadFarms();
@@ -112,6 +113,39 @@ export default function AuditPage() {
       toast.error(err.message || "Falha grave na importação do arquivo.");
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleClearData = async () => {
+    if (!selectedFarmId) return;
+    if (!confirm("⚠️ ATENÇÃO: Isso irá apagar permanentemente todas as safras, despesas e receitas vinculadas a esta fazenda no banco de dados. Deseja continuar?")) {
+      return;
+    }
+    
+    setClearing(true);
+    try {
+      const token = localStorage.getItem("@AgroCafe:token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/data-import/clear`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ farmId: selectedFarmId }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Erro ao limpar dados.");
+      }
+
+      const result = await res.json();
+      toast.success(result.message);
+      loadAudit();
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao limpar dados da fazenda.");
+    } finally {
+      setClearing(false);
     }
   };
 
