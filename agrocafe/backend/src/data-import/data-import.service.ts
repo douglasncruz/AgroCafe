@@ -226,4 +226,25 @@ export class DataImportService {
       errors
     };
   }
+
+  async clearFarmData(farmId: string) {
+    if (!farmId) {
+      throw new BadRequestException('farmId é obrigatório para limpeza.');
+    }
+
+    const farm = await this.farmRepo.findOne({ where: { id: farmId } });
+    if (!farm) {
+      throw new BadRequestException('Fazenda não encontrada.');
+    }
+
+    // Deletar despesas, receitas e safras associadas a esta fazenda
+    await this.expenseRepo.delete({ farm: { id: farmId } });
+    await this.revenueRepo.delete({ farm: { id: farmId } });
+    await this.harvestRepo.delete({ farm: { id: farmId } });
+
+    return {
+      success: true,
+      message: `Todos os dados de despesas, receitas e safras da fazenda "${farm.name}" foram removidos com sucesso.`
+    };
+  }
 }

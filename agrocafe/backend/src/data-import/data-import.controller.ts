@@ -28,4 +28,9 @@ export class DataImportController {
 
     return this.dataImportService.importExcel(file.buffer, farmId);
   }
+
+  @Post('clear')
+  async clearData(@Body('farmId') farmId: string) {
+    return this.dataImportService.clearFarmData(farmId);
+  }
 }
