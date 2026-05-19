@@ -8,9 +8,10 @@ try {
   console.log(workbook.SheetNames);
   
   for (const sheetName of workbook.SheetNames) {
+    if (!sheetName.includes('2023')) continue;
     console.log(`\n=== SHEET: ${sheetName} ===`);
     const worksheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    const data = xlsx.utils.sheet_to_json(worksheet);
     console.log(JSON.stringify(data.slice(0, 3), null, 2));
   }
 } catch (err) {

@@ -140,12 +140,10 @@ export class DataImportService {
                 category = 'Impostos e Taxas';
               }
 
-              // Checar duplicata
               const exists = await this.expenseRepo.findOne({
                 where: {
                   date: parsedDate,
                   description: rawDesc,
-                  amount: parsedVal,
                   farm: { id: farmId }
                 }
               });
@@ -211,11 +209,9 @@ export class DataImportService {
             const dateStr = `${year}-08-15`; // Data aproximada de venda de safra
             const parsedDate = new Date(dateStr);
 
-            // Checar duplicata de receita
             const exists = await this.revenueRepo.findOne({
               where: {
                 date: parsedDate,
-                total_value: parsedVal,
                 farm: { id: farmId }
               }
             });
@@ -248,7 +244,7 @@ export class DataImportService {
 
     return {
       success: true,
-      message: 'Processamento da planilha concluído',
+      message: `Processamento concluído. Importadas: ${expensesImported} despesas e ${revenuesImported} receitas. (Erros: ${errors.length})`,
       summary: {
         expensesImported,
         revenuesImported,
