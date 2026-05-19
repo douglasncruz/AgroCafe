@@ -272,6 +272,19 @@ export default function AuditPage() {
                   "Iniciar Migração de Dados"
                 )}
               </Button>
+
+              <Button 
+                variant="destructive" 
+                onClick={handleClearData} 
+                disabled={clearing || !selectedFarmId}
+                className="w-full sm:w-auto"
+              >
+                {clearing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Limpando...</>
+                ) : (
+                  "Limpar Dados Existentes"
+                )}
+              </Button>
             </div>
             
             {!selectedFarmId && (
