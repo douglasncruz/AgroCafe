@@ -19,6 +19,7 @@ import { ReportsModule } from './reports/reports.module';
 import { AgrochemicalsModule } from './agrochemicals/agrochemicals.module';
 import { AuditModule } from './audit/audit.module';
 import { HarvestsModule } from './harvests/harvests.module';
+import { DataImportModule } from './data-import/data-import.module';
 import { User } from './users/entities/user.entity';
 import { Farm } from './farms/entities/farm.entity';
 import { Plot } from './plots/entities/plot.entity';
@@ -78,7 +79,8 @@ import { Harvest } from './harvests/entities/harvest.entity';
     ReportsModule,
     AgrochemicalsModule,
     AuditModule,
-    HarvestsModule
+    HarvestsModule,
+    DataImportModule
   ],
   controllers: [AppController],
   providers: [
