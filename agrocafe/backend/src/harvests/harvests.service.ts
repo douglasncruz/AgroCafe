@@ -186,7 +186,7 @@ export class HarvestsService {
     }
 
     harvest.status = HarvestStatus.ABERTA;
-    harvest.end_date = null; // Remove the end date since it's open again
+    harvest.end_date = null as any; // Remove the end date since it's open again
     harvest.is_active = true;
 
     // Desativar outras safras desta fazenda

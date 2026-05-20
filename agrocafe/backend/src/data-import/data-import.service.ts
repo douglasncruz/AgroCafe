@@ -175,7 +175,7 @@ export class DataImportService {
                   amount: parsedVal,
                   category: category,
                   payer_name: rawPayer,
-                  partner: targetPartner,
+                  partner: targetPartner || undefined,
                   farm: farm,
                   harvest: targetHarvest,
                   status: 'Pago'
@@ -247,7 +247,7 @@ export class DataImportService {
                 total_value: parsedVal,
                 buyer_name: 'Venda Café (Carga Excel)',
                 receiver_name: rawName,
-                partner: targetPartner,
+                partner: targetPartner || undefined,
                 farm: farm,
                 harvest: targetHarvest
               });
