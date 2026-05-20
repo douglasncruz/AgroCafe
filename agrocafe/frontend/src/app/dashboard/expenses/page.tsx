@@ -22,6 +22,10 @@ export default function ExpensesPage() {
   const [sortField, setSortField] = useState<string>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
+  // Filtering states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+
   // Form states
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -124,8 +128,29 @@ export default function ExpensesPage() {
     return sortDirection === "asc" ? <ArrowUp className="inline h-3 w-3 ml-1" /> : <ArrowDown className="inline h-3 w-3 ml-1" />;
   };
 
-  const sortedExpenses = [...expenses]
+  const filteredExpenses = expenses
     .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
+    .filter(exp => {
+      if (selectedMonth === "all") return true;
+      const monthIndex = exp.date.includes('-') 
+        ? parseInt(exp.date.split('-')[1], 10) - 1 
+        : new Date(exp.date).getUTCMonth();
+      return monthIndex.toString() === selectedMonth;
+    })
+    .filter(exp => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        exp.description?.toLowerCase().includes(term) ||
+        exp.category?.toLowerCase().includes(term) ||
+        exp.payer_name?.toLowerCase().includes(term) ||
+        exp.farm?.name?.toLowerCase().includes(term)
+      );
+    });
+
+  const totalFilteredAmount = filteredExpenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+  const sortedExpenses = [...filteredExpenses]
     .sort((a, b) => {
       let aVal = a[sortField];
       let bVal = b[sortField];
@@ -173,10 +198,41 @@ export default function ExpensesPage() {
 
       {/* Table */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-900">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input className="pl-9 bg-white dark:bg-slate-900" placeholder="Buscar despesa..." />
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-800/50">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                className="pl-9 bg-white dark:bg-slate-900" 
+                placeholder="Buscar despesa..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <select
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="p-2 border border-slate-300 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-farm-500 outline-none w-full sm:w-44 font-medium text-slate-700 dark:text-slate-300"
+            >
+              <option value="all">Todos os Meses</option>
+              <option value="0">Janeiro</option>
+              <option value="1">Fevereiro</option>
+              <option value="2">Março</option>
+              <option value="3">Abril</option>
+              <option value="4">Maio</option>
+              <option value="5">Junho</option>
+              <option value="6">Julho</option>
+              <option value="7">Agosto</option>
+              <option value="8">Setembro</option>
+              <option value="9">Outubro</option>
+              <option value="10">Novembro</option>
+              <option value="11">Dezembro</option>
+            </select>
+          </div>
+          
+          <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-850 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
+            Total do período: <span className="text-farm-600 dark:text-farm-400 font-bold">{formatCurrency(totalFilteredAmount)}</span>
           </div>
         </div>
         <div className="overflow-x-auto">

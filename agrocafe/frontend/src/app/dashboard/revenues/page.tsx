@@ -48,9 +48,6 @@ export default function RevenuesPage() {
         if (partnerData.length > 0) setPartnerId(partnerData[0].id);
       }
       if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
-      if (farmData.length > 0) setFarmId(farmData[0].id);
-      if (partnerData.length > 0) setPartnerId(partnerData[0].id);
-      if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
       else if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {
       toast.error("Erro ao carregar receitas.");
