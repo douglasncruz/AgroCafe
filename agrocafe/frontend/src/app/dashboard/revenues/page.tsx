@@ -12,6 +12,7 @@ import { useHarvest } from "@/context/HarvestContext";
 export default function RevenuesPage() {
   const [revenues, setRevenues] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function RevenuesPage() {
   const [date, setDate] = useState("");
   const [farmId, setFarmId] = useState("");
   const [buyerName, setBuyerName] = useState("");
-  const [receiverName, setReceiverName] = useState("");
+  const [partnerId, setPartnerId] = useState("");
   const [harvestId, setHarvestId] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
@@ -35,13 +36,20 @@ export default function RevenuesPage() {
       const token = localStorage.getItem("@AgroCafe:token");
       if (!token) return;
       
-      const [revData, farmData] = await Promise.all([
-        api.get('/revenues', token),
-        api.get('/farms', token)
-      ]);
+      const revData = await api.get('/revenues', token);
+      const farmData = await api.get('/farms', token);
       setRevenues(revData);
       setFarms(farmData);
+      if (farmData.length > 0) {
+        const farmId = farmData[0].id;
+        setFarmId(farmId);
+        const partnerData = await api.get(`/partners?farmId=${farmId}`, token);
+        setPartners(partnerData);
+        if (partnerData.length > 0) setPartnerId(partnerData[0].id);
+      }
+      if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
       if (farmData.length > 0) setFarmId(farmData[0].id);
+      if (partnerData.length > 0) setPartnerId(partnerData[0].id);
       if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
       else if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {
@@ -83,6 +91,7 @@ export default function RevenuesPage() {
       formData.append('date', date);
       formData.append('farmId', farmId);
       if (buyerName) formData.append('buyer_name', buyerName);
+      if (partnerId) formData.append('partnerId', partnerId);
       if (harvestId) formData.append('harvestId', harvestId);
       if (receiptFile) formData.append('receipt', receiptFile);
 
@@ -175,6 +184,7 @@ export default function RevenuesPage() {
                   <th className="px-6 py-4 font-medium text-center">Qtd Sacas</th>
                   <th className="px-6 py-4 font-medium text-right">Preço Saca</th>
                   <th className="px-6 py-4 font-medium text-right">Valor Total</th>
+                  <th className="px-6 py-4 font-medium text-center">Sócio</th>
                   <th className="px-6 py-4 font-medium text-center">Ações</th>
                 </tr>
               </thead>
@@ -183,7 +193,7 @@ export default function RevenuesPage() {
                   .filter(rev => !selectedHarvest || rev.harvest?.id === selectedHarvest.id)
                   .length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center border-b border-slate-100 dark:border-slate-800">
+                    <td colSpan={8} className="px-6 py-12 text-center border-b border-slate-100 dark:border-slate-800">
                       <div className="flex flex-col items-center justify-center text-slate-500">
                         <TrendingUp className="h-12 w-12 text-slate-300 mb-3" />
                         <p className="text-lg font-medium text-slate-900 dark:text-white">Nenhuma venda registrada</p>
@@ -222,6 +232,9 @@ export default function RevenuesPage() {
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-green-600 dark:text-green-400">
                         {formatCurrency(Number(revenue.total_value))}
+                      </td>
+                      <td className="px-6 py-4 text-center text-slate-600 dark:text-slate-400">
+                        {revenue.partner?.name || '-'}
                       </td>
                       <td className="px-6 py-4 text-center">
                         {revenue.receipt_url && (
@@ -292,8 +305,19 @@ export default function RevenuesPage() {
                     <Input id="buyer" placeholder="Ex: Cooxupé" value={buyerName} onChange={e => setBuyerName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="receiver">Sócio Recebedor (Conta Banco)</Label>
-                    <Input id="receiver" placeholder="Ex: João" value={receiverName} onChange={e => setReceiverName(e.target.value)} />
+                    <Label htmlFor="partner">Sócio Recebedor</Label>
+                    <select
+                      id="partner"
+                      className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                      value={partnerId}
+                      onChange={e => setPartnerId(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>Selecione...</option>
+                      {partners.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

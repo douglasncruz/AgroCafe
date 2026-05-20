@@ -136,10 +136,13 @@ export class DashboardService {
       if (partner && partner.share_percentage) {
         const share = Number(partner.share_percentage) / 100;
         const despesasPagas = expenses
-          .filter(e => e.partner?.id === partnerId)
+          .filter(e => e.partner?.id === partnerId || e.payer_name === partner.name)
           .reduce((acc, curr) => acc + Number(curr.amount), 0);
         
-        const receitasDoSocio = totalReceitas * share;
+        const receitasDoSocio = revenues
+          .filter(r => r.partner?.id === partnerId || r.receiver_name === partner.name)
+          .reduce((acc, curr) => acc + Number(curr.total_value), 0);
+        
         const parteTeoricaDespesas = totalDespesas * share;
         const saldoAcerto = despesasPagas - parteTeoricaDespesas;
 

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Revenue } from './entities/revenue.entity';
 import { Farm } from '../farms/entities/farm.entity';
+import { Partner } from '../partners/entities/partner.entity';
 import { HarvestValidationService } from '../harvests/harvest-validation.service';
 
 @Injectable()
@@ -10,12 +11,13 @@ export class RevenuesService {
   constructor(
     @InjectRepository(Revenue) private revenueRepo: Repository<Revenue>,
     @InjectRepository(Farm) private farmRepo: Repository<Farm>,
+    @InjectRepository(Partner) private partnerRepo: Repository<Partner>,
     private harvestValidation: HarvestValidationService,
   ) {}
 
   async findAll() {
     return this.revenueRepo.find({
-      relations: ['farm', 'harvest'],
+      relations: ['farm', 'harvest', 'partner'],
       order: { date: 'DESC' },
     });
   }
@@ -23,13 +25,13 @@ export class RevenuesService {
   async findByHarvest(harvestId: string) {
     return this.revenueRepo.find({
       where: { harvest: { id: harvestId } },
-      relations: ['farm', 'harvest'],
+      relations: ['farm', 'harvest', 'partner'],
       order: { date: 'DESC' },
     });
   }
 
   async create(createDto: any) {
-    const { farmId, harvestId, ...rest } = createDto;
+    const { farmId, harvestId, partnerId, ...rest } = createDto;
 
     // ⚡ REGRA CRÍTICA: Validar safra obrigatória e aberta
     const harvest = await this.harvestValidation.validateForFinancialEntry(harvestId);
@@ -38,6 +40,15 @@ export class RevenuesService {
     const farm = await this.farmRepo.findOne({ where: { id: farmId } });
     if (farmId && !farm) {
       throw new BadRequestException('Fazenda não encontrada.');
+    }
+
+    // Validar parceiro (opcional)
+    let partner = null;
+    if (partnerId) {
+      partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
+      if (!partner) {
+        throw new BadRequestException('Sócio não encontrado.');
+      }
     }
 
     // Server-side calculation to ensure data integrity
@@ -59,10 +70,11 @@ export class RevenuesService {
       price_per_sack: price,
       total_value: total,
       buyer_name: rest.buyer_name,
-      receiver_name: rest.receiver_name,
+      receiver_name: rest.receiver_name || partner?.name,
       receipt_url: rest.receipt_url,
       farm: farm || undefined,
       harvest: { id: harvest.id },
+      partner: partner || undefined,
     });
     return this.revenueRepo.save(revenue);
   }
