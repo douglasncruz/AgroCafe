@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Loader2, ArrowDownRight, Search, FileText, UserCircle, Paperclip, Trash2, TrendingDown } from "lucide-react";
+import { Plus, Loader2, ArrowDownRight, Search, FileText, UserCircle, Paperclip, Trash2, TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,10 @@ export default function ExpensesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Sorting states
+  const [sortField, setSortField] = useState<string>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // Form states
   const [description, setDescription] = useState("");
@@ -106,6 +110,45 @@ export default function ExpensesPage() {
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? <ArrowUp className="inline h-3 w-3 ml-1" /> : <ArrowDown className="inline h-3 w-3 ml-1" />;
+  };
+
+  const sortedExpenses = [...expenses]
+    .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
+    .sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === 'farm') {
+        aVal = a.farm?.name?.toLowerCase() || '';
+        bVal = b.farm?.name?.toLowerCase() || '';
+      } else if (sortField === 'amount') {
+        aVal = Number(a.amount);
+        bVal = Number(b.amount);
+      } else if (sortField === 'date') {
+        aVal = new Date(a.date).getTime();
+        bVal = new Date(b.date).getTime();
+      } else if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase();
+        bVal = (bVal || '').toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
   if (loading) {
     return <div className="flex h-full items-center justify-center"><Loader2 className="animate-spin text-farm-600 h-10 w-10" /></div>;
   }
@@ -140,19 +183,17 @@ export default function ExpensesPage() {
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-800 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-6 py-4 font-medium">Data</th>
-                <th className="px-6 py-4 font-medium">Descrição</th>
-                <th className="px-6 py-4 font-medium">Categoria</th>
-                <th className="px-6 py-4 font-medium">Fazenda</th>
-                <th className="px-6 py-4 font-medium">Pagador</th>
-                <th className="px-6 py-4 font-medium text-right">Valor</th>
+                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('date')}>Data {getSortIcon('date')}</th>
+                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('description')}>Descrição {getSortIcon('description')}</th>
+                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('category')}>Categoria {getSortIcon('category')}</th>
+                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('farm')}>Fazenda {getSortIcon('farm')}</th>
+                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('payer_name')}>Pagador {getSortIcon('payer_name')}</th>
+                <th className="px-6 py-4 font-medium text-right cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onClick={() => handleSort('amount')}>Valor {getSortIcon('amount')}</th>
                 <th className="px-6 py-4 font-medium text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
-                {expenses
-                  .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
-                  .length === 0 ? (
+                {sortedExpenses.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center border-b border-slate-100 dark:border-slate-800">
                       <div className="flex flex-col items-center justify-center text-slate-500">
@@ -163,9 +204,7 @@ export default function ExpensesPage() {
                     </td>
                   </tr>
                 ) : (
-                  expenses
-                    .filter(exp => !selectedHarvest || exp.harvest?.id === selectedHarvest.id)
-                    .map((expense) => (
+                  sortedExpenses.map((expense) => (
                       <tr key={expense.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       {new Date(expense.date).toLocaleDateString('pt-BR')}
