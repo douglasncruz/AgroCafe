@@ -36,8 +36,8 @@ export class Revenue {
   @Column({ nullable: true })
   buyer_name: string;
 
-  @Column({ nullable: true })
-  receiver_name: string; // Sócio que recebeu o dinheiro
+  @ManyToOne(() => Partner, { nullable: true, onDelete: 'SET NULL' })
+  partner: Partner;
 
   @Column({ nullable: true })
   receipt_url: string;
