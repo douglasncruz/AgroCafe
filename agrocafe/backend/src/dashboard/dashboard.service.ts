@@ -112,28 +112,13 @@ export class DashboardService {
       if (pName) partnersMap[pName] = (partnersMap[pName] || 0) + val;
     });
 
-    let multiplier = 1;
-    if (partnerId) {
-      const partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
-      if (partner && partner.share_percentage) {
-        multiplier = Number(partner.share_percentage) / 100;
-      }
-    }
-
-    // Aplica a proporcionalidade aos dados mensais
-    monthlyData = monthlyData.map(d => ({
-      month: d.month,
-      despesas: d.despesas * multiplier,
-      receitas: d.receitas * multiplier
-    }));
-
     const colors = ["var(--color-farm-500)", "var(--color-coffee-500)", "var(--color-earth-500)", "var(--color-slate-500)", "#ef4444", "#f59e0b"];
     const expensesByCategory = Object.entries(farmTotals)
       .sort((a, b) => b[1] - a[1]) // Sort by value desc
       .slice(0, 6) // Max 6 categories for pie chart
       .map(([name, value], index) => ({
         name: name.includes('Manutenção') ? name : `Despesas: ${name}`,
-        value: value * multiplier,
+        value,
         color: colors[index % colors.length]
       }));
 
@@ -145,16 +130,42 @@ export class DashboardService {
 
     const partnerSplit = Object.entries(partnersMap).map(([name, value]) => ({ name, value }));
 
+    let partnerAcerto = null;
+    if (partnerId) {
+      const partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
+      if (partner && partner.share_percentage) {
+        const share = Number(partner.share_percentage) / 100;
+        const despesasPagas = expenses
+          .filter(e => e.partner?.id === partnerId)
+          .reduce((acc, curr) => acc + Number(curr.amount), 0);
+        
+        const receitasDoSocio = totalReceitas * share;
+        const parteTeoricaDespesas = totalDespesas * share;
+        const saldoAcerto = despesasPagas - parteTeoricaDespesas;
+
+        partnerAcerto = {
+          nome: partner.name,
+          percentual: partner.share_percentage,
+          totalDespesasFazenda: totalDespesas,
+          parteTeoricaDespesas: parteTeoricaDespesas,
+          despesasPagas: despesasPagas,
+          saldoAcerto: saldoAcerto,
+          receitas: receitasDoSocio
+        };
+      }
+    }
+
     return {
       cashflowData,
       expensesByCategory,
       totalDespesas,
       totalReceitas,
       lucroEstimado: totalReceitas - totalDespesas,
-      custoPorHectare: totalDespesas > 0 ? totalDespesas / 100 : 0, // Custo por hectare geralmente não se rateia, mas o painel divide pela mesma área, então o custo proporcional faz sentido
-      totalSacas: totalSacas * multiplier,
+      custoPorHectare: totalDespesas > 0 ? totalDespesas / 100 : 0,
+      totalSacas,
       machinesCount,
-      partnerSplit // Mantemos o balanço físico inteiro para o sócio entender o ecossistema financeiro
+      partnerSplit,
+      partnerAcerto
     };
   }
 }

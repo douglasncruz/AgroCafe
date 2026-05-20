@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat, ChevronDown } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat, ChevronDown, FileText } from "lucide-react";
 import { api } from "@/services/api";
 import { useHarvest } from "@/context/HarvestContext";
 
@@ -224,65 +224,135 @@ export default function DashboardPage() {
       
       {/* Primeiros 4 Cards Principais */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
-          <div className="flex items-center justify-between pb-2">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Receitas</p>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+        {data.partnerAcerto ? (
+          <>
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sua Receita ({Number(data.partnerAcerto.percentual)}%)</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.partnerAcerto.receitas)}</h2>
+                <p className="text-xs text-green-600 flex items-center mt-1 font-medium">
+                  Já creditado via vendas
+                </p>
+              </div>
             </div>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.totalReceitas)}</h2>
-            <p className="text-xs text-green-600 flex items-center mt-1 font-medium">
-              <ArrowUpRight className="h-3 w-3 mr-1" /> Vendas de café
-            </p>
-          </div>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
-          <div className="flex items-center justify-between pb-2">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Despesas</p>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20">
-              <TrendingDown className="h-5 w-5 text-red-600" />
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sua Parte Despesas</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <FileText className="h-5 w-5 text-amber-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.partnerAcerto.parteTeoricaDespesas)}</h2>
+                <p className="text-xs text-amber-600 flex items-center mt-1 font-medium">
+                  Rateio ({Number(data.partnerAcerto.percentual)}% de {formatCurrency(data.partnerAcerto.totalDespesasFazenda)})
+                </p>
+              </div>
             </div>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.totalDespesas)}</h2>
-            <p className="text-xs text-red-600 flex items-center mt-1 font-medium">
-              <ArrowDownRight className="h-3 w-3 mr-1" /> Custos + Manutenção
-            </p>
-          </div>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
-          <div className="flex items-center justify-between pb-2">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Lucro Líquido</p>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-coffee-50 dark:bg-coffee-900/20">
-              <Wallet className="h-5 w-5 text-coffee-600" />
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Você Pagou</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                  <Wallet className="h-5 w-5 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.partnerAcerto.despesasPagas)}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mt-1">
+                  Desembolso físico até agora
+                </p>
+              </div>
             </div>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.lucroEstimado)}</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mt-1">
-              Caixa livre gerado
-            </p>
-          </div>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
-          <div className="flex items-center justify-between pb-2">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sacas Vendidas</p>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20">
-              <Wheat className="h-5 w-5 text-amber-600" />
+            <div className={`rounded-xl border p-6 shadow-sm transition-all hover:shadow-md ${data.partnerAcerto.saldoAcerto >= 0 ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30' : 'bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-900/30'}`}>
+              <div className="flex items-center justify-between pb-2">
+                <p className={`text-sm font-medium ${data.partnerAcerto.saldoAcerto >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                  Status do Acerto
+                </p>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${data.partnerAcerto.saldoAcerto >= 0 ? 'bg-green-100 dark:bg-green-900/50' : 'bg-red-100 dark:bg-red-900/50'}`}>
+                  {data.partnerAcerto.saldoAcerto >= 0 ? <ArrowUpRight className="h-5 w-5 text-green-600 dark:text-green-400" /> : <ArrowDownRight className="h-5 w-5 text-red-600 dark:text-red-400" />}
+                </div>
+              </div>
+              <div>
+                <h2 className={`text-2xl font-bold ${data.partnerAcerto.saldoAcerto >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                  {formatCurrency(Math.abs(data.partnerAcerto.saldoAcerto))}
+                </h2>
+                <p className={`text-xs flex items-center mt-1 font-medium ${data.partnerAcerto.saldoAcerto >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
+                  {data.partnerAcerto.saldoAcerto >= 0 ? 'A Receber (Pagou a mais)' : 'A Pagar (Pagou a menos)'}
+                </p>
+              </div>
             </div>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{data.totalSacas} scs</h2>
-            <p className="text-xs text-amber-600 flex items-center mt-1 font-medium">
-              Preço Médio: {formatCurrency(avgPrice)}
-            </p>
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Receitas</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.totalReceitas)}</h2>
+                <p className="text-xs text-green-600 flex items-center mt-1 font-medium">
+                  <ArrowUpRight className="h-3 w-3 mr-1" /> Vendas de café
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Despesas</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20">
+                  <TrendingDown className="h-5 w-5 text-red-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.totalDespesas)}</h2>
+                <p className="text-xs text-red-600 flex items-center mt-1 font-medium">
+                  <ArrowDownRight className="h-3 w-3 mr-1" /> Custos + Manutenção
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Lucro Líquido</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-coffee-50 dark:bg-coffee-900/20">
+                  <Wallet className="h-5 w-5 text-coffee-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(data.lucroEstimado)}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center mt-1">
+                  Caixa livre gerado
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md">
+              <div className="flex items-center justify-between pb-2">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sacas Vendidas</p>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <Wheat className="h-5 w-5 text-amber-600" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{data.totalSacas} scs</h2>
+                <p className="text-xs text-amber-600 flex items-center mt-1 font-medium">
+                  Preço Médio: {formatCurrency(avgPrice)}
+                </p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Row secundária de métricas */}
