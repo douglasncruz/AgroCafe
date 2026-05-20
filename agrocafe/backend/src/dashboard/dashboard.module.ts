@@ -7,9 +7,12 @@ import { Farm } from '../farms/entities/farm.entity';
 import { Revenue } from '../revenues/entities/revenue.entity';
 import { Maintenance } from '../machines/entities/maintenance.entity';
 import { Machine } from '../machines/entities/machine.entity';
+import { Partner } from '../partners/entities/partner.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Expense, Farm, Revenue, Maintenance, Machine])],
+  imports: [
+    TypeOrmModule.forFeature([Expense, Farm, Revenue, Maintenance, Machine, Partner]),
+  ],
   controllers: [DashboardController],
   providers: [DashboardService]
 })
