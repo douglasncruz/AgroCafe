@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   X,
+  Unlock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,6 +140,24 @@ export default function HarvestsPage() {
       await refreshHarvests();
     } catch (err: any) {
       toast.error(err.message || "Erro ao encerrar safra.");
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReopen = async (id: string, harvestName: string) => {
+    if (!confirm(`Deseja REABRIR a safra "${harvestName}"?\n\nEla voltará a ser a safra ativa e poderá receber novos lançamentos.`))
+      return;
+
+    setActionId(id);
+    try {
+      const token = localStorage.getItem("@AgroCafe:token");
+      await api.patch(`/harvests/${id}/reopen`, {}, token || "");
+      toast.success(`Safra "${harvestName}" reaberta com sucesso.`);
+      await loadData();
+      await refreshHarvests();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao reabrir safra.");
     } finally {
       setActionId(null);
     }
@@ -372,6 +391,22 @@ export default function HarvestsPage() {
                         <Archive className="h-4 w-4 mr-1" />
                       )}
                       Arquivar
+                    </Button>
+                  )}
+                  {harvest.status === "Encerrada" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-800 dark:hover:bg-green-900/30"
+                      onClick={() => handleReopen(harvest.id, harvest.name)}
+                      disabled={actionId === harvest.id}
+                    >
+                      {actionId === harvest.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <Unlock className="h-4 w-4 mr-1" />
+                      )}
+                      Reabrir
                     </Button>
                   )}
                 </div>

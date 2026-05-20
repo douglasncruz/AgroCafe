@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Harvest, HarvestStatus } from './entities/harvest.entity';
 import { Farm } from '../farms/entities/farm.entity';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
@@ -155,6 +155,45 @@ export class HarvestsService {
 
     harvest.status = HarvestStatus.ARQUIVADA;
     harvest.is_active = false;
+
+    return this.harvestsRepository.save(harvest);
+  }
+
+  /**
+   * Reabre uma safra encerrada.
+   * Regras:
+   *  - Apenas safras com status "Encerrada" podem ser reabertas
+   *  - Não pode haver outra safra aberta para a mesma fazenda
+   */
+  async reopenHarvest(id: string): Promise<Harvest> {
+    const harvest = await this.findById(id);
+
+    if (harvest.status !== HarvestStatus.ENCERRADA) {
+      throw new BadRequestException(
+        `Apenas safras encerradas podem ser reabertas. A safra "${harvest.name}" está com status "${harvest.status}".`
+      );
+    }
+
+    // Check if there is already an open harvest for this farm
+    const existingOpen = await this.harvestsRepository.findOne({
+      where: { farm: { id: harvest.farm.id }, status: HarvestStatus.ABERTA },
+    });
+
+    if (existingOpen) {
+      throw new BadRequestException(
+        `Já existe uma safra aberta para esta fazenda: "${existingOpen.name}". Encerre-a antes de reabrir outra safra.`
+      );
+    }
+
+    harvest.status = HarvestStatus.ABERTA;
+    harvest.end_date = null; // Remove the end date since it's open again
+    harvest.is_active = true;
+
+    // Desativar outras safras desta fazenda
+    await this.harvestsRepository.update(
+      { farm: { id: harvest.farm.id }, id: Not(harvest.id) as any },
+      { is_active: false },
+    );
 
     return this.harvestsRepository.save(harvest);
   }

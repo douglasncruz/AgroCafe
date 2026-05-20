@@ -86,4 +86,12 @@ export class HarvestsController {
   archiveHarvest(@Param('id') id: string) {
     return this.harvestsService.archiveHarvest(id);
   }
+
+  /**
+   * Reabre uma safra encerrada.
+   */
+  @Patch(':id/reopen')
+  reopenHarvest(@Param('id') id: string) {
+    return this.harvestsService.reopenHarvest(id);
+  }
 }
