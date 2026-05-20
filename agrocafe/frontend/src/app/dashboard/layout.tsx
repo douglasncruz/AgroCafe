@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   Wheat,
   AlertTriangle,
-  X
+  X,
+  Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHarvest } from "@/context/HarvestContext";
@@ -144,6 +145,7 @@ export default function DashboardLayout({
             <NavItem href="/dashboard/revenues" icon={TrendingUp} activeColor="text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400">Receitas (Vendas)</NavItem>
             <NavItem href="/dashboard/expenses" icon={TrendingDown} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Despesas & Custos</NavItem>
             <NavItem href="/dashboard/machines" icon={Settings} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Maquinário & Frota</NavItem>
+            <NavItem href="/dashboard/stock" icon={Package} activeColor="text-teal-700 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400">Controle de Estoque</NavItem>
           </div>
 
           {/* Section: Estratégia */}

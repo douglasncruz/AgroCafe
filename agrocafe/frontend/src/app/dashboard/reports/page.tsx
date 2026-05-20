@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, BarChart3, Printer, PieChart, TrendingUp, TrendingDown, Wheat, ArrowRightLeft, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Loader2, BarChart3, Printer, PieChart as PieIcon, FileSpreadsheet, TrendingUp, TrendingDown, Wheat, ArrowRightLeft, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/services/api";
 import { useHarvest } from "@/context/HarvestContext";
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from "recharts";
 
 export default function ReportsPage() {
   const { harvests, selectedHarvest } = useHarvest();
@@ -66,6 +67,62 @@ export default function ReportsPage() {
     if (token && selectedHarvestId) fetchHarvestReport(selectedHarvestId, token);
   };
 
+  const handleExportCSV = () => {
+    if (!reportData) return;
+    
+    let csvContent = "\uFEFF"; // BOM for Excel encoding support
+    csvContent += `DEMONSTRATIVO DE RESULTADO (DRE) - ${reportData.farmDetails.name}\n`;
+    csvContent += `Propriedade;${reportData.farmDetails.name?.split(" ")[0] || ""}\n`;
+    csvContent += `Safra;${reportData.farmDetails.name || ""}\n`;
+    csvContent += `Status;${reportData.farmDetails.status || ""}\n`;
+    csvContent += `Data de Emissão;${new Date().toLocaleString("pt-BR")}\n\n`;
+
+    csvContent += `INDICADORES DRE\n`;
+    csvContent += `Rubrica;Valor (BRL)\n`;
+    csvContent += `(=) Receita Bruta Total;${reportData.dre.grossRevenue.toFixed(2)}\n`;
+    csvContent += `Insumos e Fertilizantes;${reportData.dre.directCosts.insumos.toFixed(2)}\n`;
+    csvContent += `Mão de Obra;${reportData.dre.directCosts.mao_de_obra.toFixed(2)}\n`;
+    csvContent += `Manutenção de Maquinário;${reportData.dre.directCosts.maquinario.toFixed(2)}\n`;
+    csvContent += `Impostos e Taxas;${reportData.dre.directCosts.impostos_taxas.toFixed(2)}\n`;
+    csvContent += `Outros Custos;${reportData.dre.directCosts.outros.toFixed(2)}\n`;
+    csvContent += `(-) Total de Despesas;${reportData.dre.totalCosts.toFixed(2)}\n`;
+    csvContent += `(=) Lucro / Prejuízo;${reportData.dre.netProfit.toFixed(2)}\n`;
+    csvContent += `Margem (%);${reportData.dre.profitMargin.toFixed(2)}\n\n`;
+
+    csvContent += `CUSTOS DE PRODUÇÃO & KPIS\n`;
+    csvContent += `Métrica;Valor\n`;
+    csvContent += `Custo por Saca;${reportData.kpi.costPerSack.toFixed(2)}\n`;
+    csvContent += `Preço Médio Venda;${reportData.kpi.averageSackPrice.toFixed(2)}\n`;
+    csvContent += `Custo por Hectare;${reportData.kpi.costPerHectare.toFixed(2)}\n`;
+    csvContent += `Receita por Hectare;${reportData.kpi.revenuePerHectare.toFixed(2)}\n`;
+    csvContent += `Total Sacas Vendidas;${reportData.kpi.sacksSold}\n\n`;
+
+    csvContent += `DISTRIBUIÇÃO DE LUCROS (SÓCIOS)\n`;
+    csvContent += `Sócio;Direito de Lucro (BRL);Saldo Físico Pago/Recebido (BRL);Saldo do Acerto (BRL)\n`;
+    
+    reportData.settlement.forEach((s: any) => {
+      csvContent += `${s.name};${s.fairShareProfit.toFixed(2)};${s.netCashPosition.toFixed(2)};${s.balance.toFixed(2)}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `DRE_${reportData.farmDetails.name.replace(/\s+/g, "_")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Excel/CSV exportado com sucesso!");
+  };
+
+  const directCostsData = reportData ? [
+    { name: "Insumos e Fertilizantes", value: Number(reportData.dre.directCosts.insumos), color: "#8b5cf6" },
+    { name: "Mão de Obra", value: Number(reportData.dre.directCosts.mao_de_obra), color: "#f59e0b" },
+    { name: "Manutenção de Maquinário", value: Number(reportData.dre.directCosts.maquinario), color: "#3b82f6" },
+    { name: "Impostos e Taxas", value: Number(reportData.dre.directCosts.impostos_taxas), color: "#64748b" },
+    { name: "Outros Custos", value: Number(reportData.dre.directCosts.outros), color: "#10b981" },
+  ].filter(c => c.value > 0) : [];
+
   const VariationBadge = ({ value, suffix = "" }: { value: any; suffix?: string }) => {
     if (!value) return null;
     const pct = value.percentage;
@@ -103,6 +160,9 @@ export default function ReportsPage() {
           </Button>
           <Button variant="primary" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!reportData}>
+            <FileSpreadsheet className="h-4 w-4 mr-1" /> Excel/CSV
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowCompare(!showCompare)} className="ml-auto">
             <ArrowRightLeft className="h-4 w-4 mr-1" /> Comparar
@@ -145,42 +205,77 @@ export default function ReportsPage() {
 
       {/* COMPARATIVO SIDE-BY-SIDE */}
       {compareData && showCompare && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden print:hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden print:hidden animate-scale-in">
           <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">
             <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5 text-blue-600" /> Comparativo: {compareData.harvest1.farmDetails.name} × {compareData.harvest2.farmDetails.name}
             </h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-6 py-3 text-left">Indicador</th>
-                  <th className="px-6 py-3 text-right">{compareData.harvest1.farmDetails.name}</th>
-                  <th className="px-6 py-3 text-right">{compareData.harvest2.farmDetails.name}</th>
-                  <th className="px-6 py-3 text-center">Variação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { label: "Receita Bruta", k: "grossRevenue", v1: compareData.harvest1.dre.grossRevenue, v2: compareData.harvest2.dre.grossRevenue },
-                  { label: "Custo Total", k: "totalCosts", v1: compareData.harvest1.dre.totalCosts, v2: compareData.harvest2.dre.totalCosts },
-                  { label: "Lucro Líquido", k: "netProfit", v1: compareData.harvest1.dre.netProfit, v2: compareData.harvest2.dre.netProfit },
-                  { label: "Sacas Vendidas", k: "sacksSold", v1: compareData.harvest1.kpi.sacksSold, v2: compareData.harvest2.kpi.sacksSold },
-                  { label: "Custo por Saca", k: "costPerSack", v1: compareData.harvest1.kpi.costPerSack, v2: compareData.harvest2.kpi.costPerSack },
-                  { label: "Preço Médio Venda", k: "averageSackPrice", v1: compareData.harvest1.kpi.averageSackPrice, v2: compareData.harvest2.kpi.averageSackPrice },
-                ].map(row => (
-                  <tr key={row.k} className="border-b border-slate-100 dark:border-slate-800">
-                    <td className="px-6 py-3 font-medium text-slate-900 dark:text-white">{row.label}</td>
-                    <td className="px-6 py-3 text-right text-slate-600 dark:text-slate-400">{row.k === "sacksSold" ? row.v1 : formatCurrency(row.v1)}</td>
-                    <td className="px-6 py-3 text-right font-bold text-slate-900 dark:text-white">{row.k === "sacksSold" ? row.v2 : formatCurrency(row.v2)}</td>
-                    <td className="px-6 py-3 text-center">
-                      <VariationBadge value={compareData.variation[row.k as keyof typeof compareData.variation]} />
-                    </td>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+            <div className="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Indicador</th>
+                    <th className="px-4 py-3 text-right">{compareData.harvest1.farmDetails.name}</th>
+                    <th className="px-4 py-3 text-right">{compareData.harvest2.farmDetails.name}</th>
+                    <th className="px-4 py-3 text-center">Variação</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {[
+                    { label: "Receita Bruta", k: "grossRevenue", v1: compareData.harvest1.dre.grossRevenue, v2: compareData.harvest2.dre.grossRevenue },
+                    { label: "Custo Total", k: "totalCosts", v1: compareData.harvest1.dre.totalCosts, v2: compareData.harvest2.dre.totalCosts },
+                    { label: "Lucro Líquido", k: "netProfit", v1: compareData.harvest1.dre.netProfit, v2: compareData.harvest2.dre.netProfit },
+                    { label: "Sacas Vendidas", k: "sacksSold", v1: compareData.harvest1.kpi.sacksSold, v2: compareData.harvest2.kpi.sacksSold },
+                    { label: "Custo por Saca", k: "costPerSack", v1: compareData.harvest1.kpi.costPerSack, v2: compareData.harvest2.kpi.costPerSack },
+                    { label: "Preço Médio Venda", k: "averageSackPrice", v1: compareData.harvest1.kpi.averageSackPrice, v2: compareData.harvest2.kpi.averageSackPrice },
+                  ].map(row => (
+                    <tr key={row.k} className="border-b border-slate-100 dark:border-slate-800">
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.label}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{row.k === "sacksSold" ? row.v1 : formatCurrency(row.v1)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">{row.k === "sacksSold" ? row.v2 : formatCurrency(row.v2)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <VariationBadge value={compareData.variation[row.k as keyof typeof compareData.variation]} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Comparativo Gráfico */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800 h-[300px] flex flex-col justify-between">
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2 text-center">Evolução de Valores de Safra (R$)</p>
+              <div className="h-[230px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    {
+                      name: "Receita Bruta",
+                      [compareData.harvest1.farmDetails.name]: compareData.harvest1.dre.grossRevenue,
+                      [compareData.harvest2.farmDetails.name]: compareData.harvest2.dre.grossRevenue,
+                    },
+                    {
+                      name: "Custo Total",
+                      [compareData.harvest1.farmDetails.name]: compareData.harvest1.dre.totalCosts,
+                      [compareData.harvest2.farmDetails.name]: compareData.harvest2.dre.totalCosts,
+                    },
+                    {
+                      name: "Lucro Líquido",
+                      [compareData.harvest1.farmDetails.name]: compareData.harvest1.dre.netProfit,
+                      [compareData.harvest2.farmDetails.name]: compareData.harvest2.dre.netProfit,
+                    },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" />
+                    <YAxis tickFormatter={(val) => `R$ ${val / 1000}k`} />
+                    <RechartsTooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Legend />
+                    <Bar dataKey={compareData.harvest1.farmDetails.name} fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey={compareData.harvest2.farmDetails.name} fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -197,64 +292,45 @@ export default function ReportsPage() {
           </div>
 
           <div className="p-8 grid gap-8 md:grid-cols-2">
-            {/* DRE Column */}
-            <div>
-              <h3 className="font-bold text-lg border-b-2 border-slate-200 pb-2 mb-4 text-slate-900 dark:text-white flex items-center gap-2 print:text-black">
-                <PieChart className="h-5 w-5 text-farm-600" /> Demonstrativo (DRE)
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <span className="font-semibold text-green-700 dark:text-green-400 text-lg">(=) Receita Bruta Total</span>
-                  <span className="font-bold text-xl text-green-700 dark:text-green-400">{formatCurrency(reportData.dre.grossRevenue)}</span>
-                </div>
-                <div className="pt-4 space-y-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">(-) Custos Operacionais Diretos</span>
-                  {[
-                    ["Insumos e Fertilizantes", reportData.dre.directCosts.insumos],
-                    ["Mão de Obra", reportData.dre.directCosts.mao_de_obra],
-                    ["Manutenção de Maquinário", reportData.dre.directCosts.maquinario],
-                    ["Impostos e Taxas", reportData.dre.directCosts.impostos_taxas],
-                    ["Outros Custos", reportData.dre.directCosts.outros],
-                  ].map(([label, val]) => (
-                    <div key={label as string} className="flex justify-between pl-4 text-slate-600 dark:text-slate-400 text-sm">
-                      <span>{label as string}</span><span>{formatCurrency(val as number)}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between items-end pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="font-semibold text-red-600">(=) Total de Despesas</span>
-                  <span className="font-bold text-red-600">{formatCurrency(reportData.dre.totalCosts)}</span>
-                </div>
-                <div className="flex justify-between items-end pt-6 border-t-2 border-slate-200 dark:border-slate-700">
-                  <span className="font-bold text-slate-900 dark:text-white text-xl">(=) Lucro / Prejuízo</span>
-                  <span className={`font-bold text-2xl ${reportData.dre.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>{formatCurrency(reportData.dre.netProfit)}</span>
-                </div>
-                <div className="text-right text-sm text-slate-500">Margem: <span className="font-bold">{reportData.dre.profitMargin.toFixed(2)}%</span></div>
-              </div>
-            </div>
-
-            {/* KPIs + Sociedade */}
+            {/* Left Column: DRE + Partners */}
             <div className="space-y-8">
+              {/* DRE */}
               <div>
-                <h3 className="font-bold text-lg border-b-2 border-slate-200 pb-2 mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-farm-600" /> Custos de Produção
+                <h3 className="font-bold text-lg border-b-2 border-slate-200 pb-2 mb-4 text-slate-900 dark:text-white flex items-center gap-2 print:text-black">
+                  <PieIcon className="h-5 w-5 text-farm-600" /> Demonstrativo (DRE)
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: "Custo/Saca", value: formatCurrency(reportData.kpi.costPerSack), sub: `${reportData.kpi.sacksSold} scs` },
-                    { label: "Preço Méd. Venda", value: formatCurrency(reportData.kpi.averageSackPrice), sub: "Receita/Sacas", green: true },
-                    { label: "Custo/Hectare", value: formatCurrency(reportData.kpi.costPerHectare), sub: `${reportData.farmDetails.area} ha` },
-                    { label: "Receita/Hectare", value: formatCurrency(reportData.kpi.revenuePerHectare), sub: `${reportData.farmDetails.area} ha`, green: true },
-                  ].map(kpi => (
-                    <div key={kpi.label} className="bg-slate-50 p-4 rounded-xl border border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
-                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">{kpi.label}</p>
-                      <p className={`text-xl font-bold ${kpi.green ? "text-green-600" : "text-slate-900 dark:text-white"}`}>{kpi.value}</p>
-                      <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <span className="font-semibold text-green-700 dark:text-green-400 text-lg">(=) Receita Bruta Total</span>
+                    <span className="font-bold text-xl text-green-700 dark:text-green-400">{formatCurrency(reportData.dre.grossRevenue)}</span>
+                  </div>
+                  <div className="pt-4 space-y-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">(-) Custos Operacionais Diretos</span>
+                    {[
+                      ["Insumos e Fertilizantes", reportData.dre.directCosts.insumos],
+                      ["Mão de Obra", reportData.dre.directCosts.mao_de_obra],
+                      ["Manutenção de Maquinário", reportData.dre.directCosts.maquinario],
+                      ["Impostos e Taxas", reportData.dre.directCosts.impostos_taxas],
+                      ["Outros Custos", reportData.dre.directCosts.outros],
+                    ].map(([label, val]) => (
+                      <div key={label as string} className="flex justify-between pl-4 text-slate-600 dark:text-slate-400 text-sm">
+                        <span>{label as string}</span><span>{formatCurrency(val as number)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-end pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="font-semibold text-red-600">(=) Total de Despesas</span>
+                    <span className="font-bold text-red-600">{formatCurrency(reportData.dre.totalCosts)}</span>
+                  </div>
+                  <div className="flex justify-between items-end pt-6 border-t-2 border-slate-200 dark:border-slate-700">
+                    <span className="font-bold text-slate-900 dark:text-white text-xl">(=) Lucro / Prejuízo</span>
+                    <span className={`font-bold text-2xl ${reportData.dre.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>{formatCurrency(reportData.dre.netProfit)}</span>
+                  </div>
+                  <div className="text-right text-sm text-slate-500">Margem: <span className="font-bold">{reportData.dre.profitMargin.toFixed(2)}%</span></div>
                 </div>
               </div>
 
+              {/* Sócios */}
               <div>
                 <h3 className="font-bold text-lg border-b-2 border-slate-200 pb-2 mb-4 text-slate-900 dark:text-white">Distribuição de Lucros (Sócios)</h3>
                 {reportData.settlement.length === 0 ? (
@@ -283,6 +359,68 @@ export default function ReportsPage() {
                     </table>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Right Column: KPIs + Cost PieChart */}
+            <div className="space-y-8">
+              {/* KPIs */}
+              <div>
+                <h3 className="font-bold text-lg border-b-2 border-slate-200 pb-2 mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-farm-600" /> Custos de Produção
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: "Custo/Saca", value: formatCurrency(reportData.kpi.costPerSack), sub: `${reportData.kpi.sacksSold} scs` },
+                    { label: "Preço Méd. Venda", value: formatCurrency(reportData.kpi.averageSackPrice), sub: "Receita/Sacas", green: true },
+                    { label: "Custo/Hectare", value: formatCurrency(reportData.kpi.costPerHectare), sub: `${reportData.farmDetails.area} ha` },
+                    { label: "Receita/Hectare", value: formatCurrency(reportData.kpi.revenuePerHectare), sub: `${reportData.farmDetails.area} ha`, green: true },
+                  ].map(kpi => (
+                    <div key={kpi.label} className="bg-slate-50 p-4 rounded-xl border border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
+                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">{kpi.label}</p>
+                      <p className={`text-xl font-bold ${kpi.green ? "text-green-600" : "text-slate-900 dark:text-white"}`}>{kpi.value}</p>
+                      <p className="text-xs text-slate-400 mt-1">{kpi.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gráfico de Distribuição de Custos */}
+              <div className="bg-slate-50 dark:bg-slate-800/40 p-6 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center print:hidden">
+                <p className="text-sm font-semibold uppercase tracking-wider mb-4 text-slate-500">Distribuição de Custos</p>
+                {directCostsData.length > 0 ? (
+                  <div className="h-[220px] w-full flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={directCostsData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={75}
+                          paddingAngle={4}
+                          dataKey="value"
+                        >
+                          {directCostsData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip formatter={(value) => formatCurrency(Number(value))} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">Sem despesas registradas.</p>
+                )}
+                {/* Legenda */}
+                <div className="mt-4 w-full grid grid-cols-2 gap-2 text-xs">
+                  {directCostsData.map((c) => (
+                    <div key={c.name} className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                      <span className="truncate text-slate-600 dark:text-slate-400" title={c.name}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

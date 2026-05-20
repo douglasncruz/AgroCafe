@@ -20,6 +20,7 @@ import { AgrochemicalsModule } from './agrochemicals/agrochemicals.module';
 import { AuditModule } from './audit/audit.module';
 import { HarvestsModule } from './harvests/harvests.module';
 import { DataImportModule } from './data-import/data-import.module';
+import { StockModule } from './stock/stock.module';
 import { User } from './users/entities/user.entity';
 import { Farm } from './farms/entities/farm.entity';
 import { Plot } from './plots/entities/plot.entity';
@@ -30,6 +31,8 @@ import { Maintenance } from './machines/entities/maintenance.entity';
 import { Partner } from './partners/entities/partner.entity';
 import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
 import { Harvest } from './harvests/entities/harvest.entity';
+import { StockItem } from './stock/entities/stock-item.entity';
+import { StockTransaction } from './stock/entities/stock-transaction.entity';
 
 @Module({
   imports: [
@@ -51,7 +54,7 @@ import { Harvest } from './harvests/entities/harvest.entity';
           return {
             type: 'postgres',
             url: databaseUrl,
-            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest],
+            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction],
             synchronize: true, // Habilitado para criar as tabelas no Supabase durante a instalação
             ssl: {
               rejectUnauthorized: false,
@@ -62,7 +65,7 @@ import { Harvest } from './harvests/entities/harvest.entity';
         return {
           type: 'sqlite',
           database: 'agrocafe.sqlite',
-          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest],
+          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction],
           synchronize: true,
         };
       },
@@ -80,7 +83,8 @@ import { Harvest } from './harvests/entities/harvest.entity';
     AgrochemicalsModule,
     AuditModule,
     HarvestsModule,
-    DataImportModule
+    DataImportModule,
+    StockModule,
   ],
   controllers: [AppController],
   providers: [

@@ -6,6 +6,7 @@ import { Revenue } from '../revenues/entities/revenue.entity';
 import { Agrochemical } from '../agrochemicals/entities/agrochemical.entity';
 import { Maintenance } from '../machines/entities/maintenance.entity';
 import { Machine } from '../machines/entities/machine.entity';
+import { StockItem } from '../stock/entities/stock-item.entity';
 
 @Injectable()
 export class AuditService {
@@ -15,6 +16,7 @@ export class AuditService {
     @InjectRepository(Agrochemical) private agroRepo: Repository<Agrochemical>,
     @InjectRepository(Machine) private macRepo: Repository<Machine>,
     @InjectRepository(Maintenance) private maintRepo: Repository<Maintenance>,
+    @InjectRepository(StockItem) private stockItemRepo: Repository<StockItem>,
   ) {}
 
   async runAudit(farmId: string) {
@@ -77,7 +79,80 @@ export class AuditService {
       });
     }
 
-    // 5. Conformidade: Sucesso
+    // 5. Auditoria Agronômica: Defensivos em Carência Ativa
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const activeGracePeriod = agrochemicals.filter(a => {
+      const safeDate = new Date(a.safe_harvest_date);
+      safeDate.setHours(0,0,0,0);
+      return safeDate > today;
+    });
+    if (activeGracePeriod.length > 0) {
+      alerts.push({
+        type: 'AGRONOMIC_CRITICAL',
+        severity: 'critical',
+        title: 'Carência Ativa - Risco de Contaminação',
+        message: `Existem ${activeGracePeriod.length} aplicação(ões) de defensivos em período de carência ativo. NÃO realizar colheita nos talhões afetados até a liberação segura.`,
+        action: 'Verificar datas seguras para colheita no módulo de Defensivos.'
+      });
+    }
+
+    // 6. Auditoria Agronômica: Dosagem Elevada
+    const highDosageAgro = agrochemicals.filter(a => Number(a.dose_per_hectare) > 5.0);
+    if (highDosageAgro.length > 0) {
+      alerts.push({
+        type: 'AGRONOMIC_WARNING',
+        severity: 'medium',
+        title: 'Dosagem de Defensivo Elevada',
+        message: `Foram detectadas ${highDosageAgro.length} aplicação(ões) de defensivo com dosagem superior a 5.0 L/ha ou Kg/ha.`,
+        action: 'Confirmar a recomendação técnica na receita agronômica correspondente.'
+      });
+    }
+
+    // 7. Auditoria de Ativos: Manutenções de Alto Custo
+    let highCostMaintenances = 0;
+    for (const machine of machines) {
+      const maints = await this.maintRepo.find({ where: { machine: { id: machine.id } } });
+      highCostMaintenances += maints.filter(m => Number(m.cost) > 5000.0).length;
+    }
+    if (highCostMaintenances > 0) {
+      alerts.push({
+        type: 'ASSET_WARNING',
+        severity: 'medium',
+        title: 'Manutenções de Alto Custo Detectadas',
+        message: `Foram encontradas ${highCostMaintenances} manutenções com custo superior a R$ 5.000,00 cada.`,
+        action: 'Auditar notas fiscais e justificativas técnicas com a oficina/provedor.'
+      });
+    }
+
+    // 8. Auditoria de Estoque: Estoque Negativo (aplicação sem compra)
+    const stockItems = await this.stockItemRepo.find({ where: { farm: { id: farmId } } });
+    const negativeStock = stockItems.filter(s => Number(s.quantity) < 0);
+    if (negativeStock.length > 0) {
+      const names = negativeStock.map(s => s.product_name).join(', ');
+      alerts.push({
+        type: 'STOCK_CRITICAL',
+        severity: 'critical',
+        title: 'Estoque Negativo - Aplicação sem Compra',
+        message: `${negativeStock.length} produto(s) possuem estoque negativo (${names}). Isso indica que defensivos foram aplicados sem registro de compra correspondente.`,
+        action: 'Registrar a entrada de compra no módulo Controle de Estoque.'
+      });
+    }
+
+    // 9. Auditoria de Estoque: Estoque Baixo
+    const lowStock = stockItems.filter(s => Number(s.quantity) >= 0 && Number(s.quantity) <= Number(s.min_quantity) && Number(s.min_quantity) > 0);
+    if (lowStock.length > 0) {
+      const names = lowStock.map(s => `${s.product_name} (${s.quantity} ${s.unit})`).join(', ');
+      alerts.push({
+        type: 'STOCK_WARNING',
+        severity: 'medium',
+        title: 'Estoque Baixo de Insumos',
+        message: `${lowStock.length} produto(s) estão com estoque abaixo do mínimo recomendado: ${names}.`,
+        action: 'Realizar nova compra ou ajustar a quantidade mínima no módulo de Estoque.'
+      });
+    }
+
+    // 10. Conformidade: Sucesso
     if (alerts.length === 0) {
       alerts.push({
         type: 'SUCCESS',
