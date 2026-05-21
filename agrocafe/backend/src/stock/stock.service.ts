@@ -39,7 +39,7 @@ export class StockService {
       throw new BadRequestException('A quantidade deve ser um número maior que zero.');
     }
 
-    const price = unit_price !== undefined ? Number(unit_price) : null;
+    const price = unit_price !== undefined && unit_price !== null ? Number(unit_price) : undefined;
 
     // 1. Criar transação
     const transaction = this.transactionRepo.create({
