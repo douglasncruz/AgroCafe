@@ -347,8 +347,8 @@ export default function HarvestsPage() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Contribuição Financeira por Sócio</p>
                     <div className="space-y-3">
                       {summary.settlement.map((s: any) => (
-                        <div key={s.name} className="flex flex-col gap-1 text-xs border-b border-slate-200/50 dark:border-slate-700/50 pb-2 last:border-0 last:pb-0">
-                          <span className="font-medium text-slate-700 dark:text-slate-300 mb-1">{s.name} ({s.percentage}%)</span>
+                        <div key={s.name} className="flex flex-col gap-1 text-xs border-b border-slate-200/50 dark:border-slate-700/50 pb-2">
+                          <span className="font-medium text-slate-700 dark:text-slate-300 mb-1">{s.name}</span>
                           <div className="flex justify-between items-center text-slate-500">
                             <span>Despesas pagas:</span>
                             <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(s.paid || 0)}</span>
@@ -359,6 +359,17 @@ export default function HarvestsPage() {
                           </div>
                         </div>
                       ))}
+                      <div className="flex flex-col gap-1 text-xs pt-1">
+                        <span className="font-bold text-slate-900 dark:text-white mb-1">Total dos Sócios</span>
+                        <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                          <span>Total Pago:</span>
+                          <span className="font-bold">{formatCurrency(summary.settlement.reduce((acc, s) => acc + (s.paid || 0), 0))}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                          <span>Total Recebido:</span>
+                          <span className="font-bold">{formatCurrency(summary.settlement.reduce((acc, s) => acc + (s.received || 0), 0))}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

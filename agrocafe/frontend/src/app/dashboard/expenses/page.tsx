@@ -12,6 +12,7 @@ import { useHarvest } from "@/context/HarvestContext";
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [farms, setFarms] = useState<any[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,6 +61,23 @@ export default function ExpensesPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      if (!farmId) {
+        setPartners([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("@AgroCafe:token");
+        const res = await api.get(`/partners?farmId=${farmId}`, token || "");
+        setPartners(res);
+      } catch (err) {
+        console.error("Erro ao carregar sócios", err);
+      }
+    };
+    fetchPartners();
+  }, [farmId]);
 
   const handleDelete = async (id: string, description: string) => {
     if (!confirm(`Deseja realmente apagar a despesa "${description}"?`)) return;
@@ -339,7 +357,17 @@ export default function ExpensesPage() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="payer">Quem realizou o pagamento?</Label>
-                    <Input id="payer" placeholder="Ex: João da Silva" value={payerName} onChange={e => setPayerName(e.target.value)} />
+                    <select 
+                      id="payer"
+                      className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-farm-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50"
+                      value={payerName}
+                      onChange={e => setPayerName(e.target.value)}
+                    >
+                      <option value="">Nenhum específico / Fazenda</option>
+                      {partners.map(p => (
+                        <option key={p.id} value={p.name}>{p.name}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-2">
