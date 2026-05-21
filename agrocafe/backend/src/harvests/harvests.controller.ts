@@ -3,6 +3,7 @@ import { HarvestsService } from './harvests.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CloseHarvestDto } from './dto/close-harvest.dto';
+import { UpdateHarvestDto } from './dto/update-harvest.dto';
 
 @Controller('api/harvests')
 @UseGuards(JwtAuthGuard)
@@ -56,6 +57,17 @@ export class HarvestsController {
   @Post()
   create(@Body(new ValidationPipe({ whitelist: true, transform: true })) dto: CreateHarvestDto) {
     return this.harvestsService.create(dto);
+  }
+
+  /**
+   * Atualiza detalhes da safra (incluindo datas).
+   */
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ whitelist: true, transform: true })) dto: UpdateHarvestDto,
+  ) {
+    return this.harvestsService.update(id, dto);
   }
 
   /**

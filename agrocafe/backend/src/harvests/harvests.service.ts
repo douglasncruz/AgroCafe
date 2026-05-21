@@ -5,6 +5,7 @@ import { Harvest, HarvestStatus } from './entities/harvest.entity';
 import { Farm } from '../farms/entities/farm.entity';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CloseHarvestDto } from './dto/close-harvest.dto';
+import { UpdateHarvestDto } from './dto/update-harvest.dto';
 
 @Injectable()
 export class HarvestsService {
@@ -87,6 +88,21 @@ export class HarvestsService {
       { farm: { id: dto.farmId } },
       { is_active: false },
     );
+
+    return this.harvestsRepository.save(harvest);
+  }
+
+  /**
+   * Atualiza detalhes de uma safra.
+   */
+  async update(id: string, dto: UpdateHarvestDto): Promise<Harvest> {
+    const harvest = await this.findById(id);
+
+    if (dto.name !== undefined) harvest.name = dto.name;
+    if (dto.year !== undefined) harvest.year = dto.year;
+    if (dto.notes !== undefined) harvest.notes = dto.notes;
+    if (dto.start_date !== undefined) harvest.start_date = new Date(dto.start_date);
+    if (dto.end_date !== undefined) harvest.end_date = new Date(dto.end_date);
 
     return this.harvestsRepository.save(harvest);
   }

@@ -287,7 +287,7 @@ export default function PartnersPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm dark:bg-slate-900 dark:border-slate-800 mb-6">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase dark:bg-slate-800">
                         <tr>
@@ -325,6 +325,52 @@ export default function PartnersPage() {
                             </td>
                           </tr>
                         ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h4 className="font-bold text-md text-slate-900 dark:text-white mt-6 mb-3">Análise de Desembolso (Despesas)</h4>
+                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-slate-50 text-slate-500 text-xs uppercase dark:bg-slate-800">
+                        <tr>
+                          <th className="px-6 py-4">Sócio</th>
+                          <th className="px-6 py-4 text-right">Deveria Pagar</th>
+                          <th className="px-6 py-4 text-right">Pagou de Fato</th>
+                          <th className="px-6 py-4 text-right">Diferença</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {settlement.settlement.map((s: any, idx: number) => {
+                          const expectedPayment = settlement.totalExpenses * (s.percentage / 100);
+                          const difference = (s.paid || 0) - expectedPayment;
+                          return (
+                            <tr key={idx} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                              <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                {s.name} <span className="text-xs text-slate-400 font-normal">({s.percentage}%)</span>
+                              </td>
+                              <td className="px-6 py-4 text-right text-slate-600">
+                                {formatCurrency(expectedPayment)}
+                              </td>
+                              <td className="px-6 py-4 text-right text-slate-600">
+                                {formatCurrency(s.paid || 0)}
+                              </td>
+                              <td className="px-6 py-4 text-right font-bold">
+                                {difference > 0 ? (
+                                  <span className="text-green-600">
+                                    Pagou a mais: {formatCurrency(difference)}
+                                  </span>
+                                ) : difference < 0 ? (
+                                  <span className="text-red-600">
+                                    Pagou a menos: {formatCurrency(Math.abs(difference))}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400">Na medida exata</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

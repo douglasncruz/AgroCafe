@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   X,
   Unlock,
+  Edit2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,9 @@ export default function HarvestsPage() {
   const [name, setName] = useState("");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [notes, setNotes] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [farmId, setFarmId] = useState("");
 
   const formatCurrency = (val: number) =>
@@ -108,23 +112,58 @@ export default function HarvestsPage() {
     loadData();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
       const token = localStorage.getItem("@AgroCafe:token");
-      await api.post("/harvests", { name, year: Number(year), notes, farmId }, token || "");
-      toast.success("Safra criada com sucesso!");
+      if (editingId) {
+        const payload: any = { name, year: Number(year), notes };
+        if (startDate) payload.start_date = startDate;
+        if (endDate) payload.end_date = endDate;
+        await api.put(`/harvests/${editingId}`, payload, token || "");
+        toast.success("Safra atualizada com sucesso!");
+      } else {
+        const payload: any = { name, year: Number(year), notes, farmId };
+        if (startDate) payload.start_date = startDate;
+        if (endDate) payload.end_date = endDate;
+        await api.post("/harvests", payload, token || "");
+        toast.success("Safra criada com sucesso!");
+      }
       setIsModalOpen(false);
-      setName("");
-      setNotes("");
+      resetForm();
       await loadData();
       await refreshHarvests();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao criar safra.");
+      toast.error(err.message || "Erro ao salvar safra.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const openNewModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (h: any) => {
+    setEditingId(h.id);
+    setName(h.name);
+    setYear(h.year.toString());
+    setNotes(h.notes || "");
+    setStartDate(h.start_date ? new Date(h.start_date).toISOString().split('T')[0] : "");
+    setEndDate(h.end_date ? new Date(h.end_date).toISOString().split('T')[0] : "");
+    setFarmId(h.farm?.id || farms[0]?.id);
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setName("");
+    setYear(new Date().getFullYear().toString());
+    setNotes("");
+    setStartDate("");
+    setEndDate("");
   };
 
   const handleClose = async (id: string, harvestName: string) => {
@@ -240,7 +279,7 @@ export default function HarvestsPage() {
               Controle o ciclo financeiro da sua lavoura por safra
             </p>
           </div>
-          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+          <Button variant="primary" onClick={openNewModal}>
             <Plus className="mr-2 h-4 w-4" /> Abrir Nova Safra
           </Button>
         </div>
@@ -287,7 +326,18 @@ export default function HarvestsPage() {
                   <div className="flex items-center gap-3">
                     {sc.icon}
                     <div>
-                      <h3 className="font-bold text-slate-900 dark:text-white text-lg">{harvest.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                          {harvest.name}
+                        </h3>
+                        <button
+                          onClick={() => openEditModal(harvest)}
+                          className="p-1 text-slate-400 hover:text-farm-600 hover:bg-farm-50 rounded transition-colors"
+                          title="Editar Safra"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${sc.badge}`}>
                           {harvest.status}
@@ -437,14 +487,14 @@ export default function HarvestsPage() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-800">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-farm-50/50 dark:bg-farm-900/10">
               <h3 className="text-lg font-bold text-farm-900 dark:text-farm-400 flex items-center gap-2">
-                <Wheat className="h-5 w-5" /> Abrir Nova Safra
+                <Wheat className="h-5 w-5" /> {editingId ? "Editar Safra" : "Abrir Nova Safra"}
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 space-y-5">
+            <form onSubmit={handleCreateOrUpdate} className="p-6 space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="harvest-name">Nome da Safra *</Label>
                 <Input
@@ -483,6 +533,27 @@ export default function HarvestsPage() {
                       <option key={f.id} value={f.id}>{f.name}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="start-date">Início da Safra</Label>
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end-date">Término da Safra</Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
                 </div>
               </div>
 
