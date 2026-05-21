@@ -41,6 +41,22 @@ export const api = {
     return data;
   },
 
+  async putForm(endpoint: string, formData: FormData, token?: string) {
+    cache.clear();
+    const headers: any = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      method: 'PUT',
+      headers,
+      body: formData,
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Erro ao processar a requisição');
+    return data;
+  },
+
   async get(endpoint: string, token: string) {
     const cacheKey = `${endpoint}-${token}`;
     

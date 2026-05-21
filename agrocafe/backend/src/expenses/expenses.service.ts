@@ -59,6 +59,39 @@ export class ExpensesService {
     return this.expenseRepo.save(expense);
   }
 
+  async update(id: string, updateDto: any) {
+    const expense = await this.expenseRepo.findOne({
+      where: { id },
+      relations: ['harvest'],
+    });
+
+    if (!expense) throw new BadRequestException('Despesa não encontrada.');
+
+    // Verificar se a safra está aberta
+    if (expense.harvest) {
+      await this.harvestValidation.validateForFinancialEntry(expense.harvest.id);
+    }
+
+    // Se estiver mudando de safra, validar a nova safra
+    if (updateDto.harvestId && updateDto.harvestId !== expense.harvest?.id) {
+      await this.harvestValidation.validateForFinancialEntry(updateDto.harvestId);
+      expense.harvest = { id: updateDto.harvestId } as any;
+    }
+
+    if (updateDto.farmId) {
+      expense.farm = { id: updateDto.farmId } as any;
+    }
+
+    if (updateDto.description !== undefined) expense.description = updateDto.description;
+    if (updateDto.category !== undefined) expense.category = updateDto.category;
+    if (updateDto.date !== undefined) expense.date = updateDto.date;
+    if (updateDto.amount !== undefined) expense.amount = Number(updateDto.amount);
+    if (updateDto.payer_name !== undefined) expense.payer_name = updateDto.payer_name;
+    if (updateDto.receipt_url !== undefined) expense.receipt_url = updateDto.receipt_url;
+
+    return this.expenseRepo.save(expense);
+  }
+
   async remove(id: string) {
     const expense = await this.expenseRepo.findOne({
       where: { id },

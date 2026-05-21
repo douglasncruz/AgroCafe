@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Loader2, ArrowDownRight, Search, FileText, UserCircle, Paperclip, Trash2, TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Loader2, ArrowDownRight, Search, FileText, UserCircle, Paperclip, Trash2, TrendingDown, ArrowUp, ArrowDown, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +36,7 @@ export default function ExpensesPage() {
   const [payerName, setPayerName] = useState("");
   const [harvestId, setHarvestId] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -95,7 +96,7 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -106,27 +107,55 @@ export default function ExpensesPage() {
       formData.append('amount', amount);
       formData.append('date', date);
       formData.append('category', category);
-      formData.append('farmId', farmId);
+      if (farmId) formData.append('farmId', farmId);
       if (payerName) formData.append('payer_name', payerName);
       if (harvestId) formData.append('harvestId', harvestId);
       if (receiptFile) formData.append('receipt', receiptFile);
 
-      await api.postForm('/expenses', formData, token || "");
+      if (editingId) {
+        await api.putForm(`/expenses/${editingId}`, formData, token || "");
+        toast.success("Despesa atualizada com sucesso!");
+      } else {
+        await api.postForm('/expenses', formData, token || "");
+        toast.success("Despesa cadastrada com sucesso!");
+      }
       
-      toast.success("Despesa cadastrada com sucesso!");
       setIsModalOpen(false);
-      // Reset form
-      setReceiptFile(null);
-      setPayerName("");
-      setDescription("");
-      setAmount("");
-      
+      resetForm();
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar despesa.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const openNewModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (expense: any) => {
+    setEditingId(expense.id);
+    setDescription(expense.description);
+    setAmount(expense.amount.toString());
+    setDate(expense.date ? new Date(expense.date).toISOString().split('T')[0] : "");
+    setCategory(expense.category);
+    setFarmId(expense.farm?.id || farms[0]?.id || "");
+    setPayerName(expense.payer_name || "");
+    setHarvestId(expense.harvest?.id || activeOpenHarvest?.id || selectedHarvest?.id || "");
+    setReceiptFile(null);
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setReceiptFile(null);
+    setPayerName("");
+    setDescription("");
+    setAmount("");
+    setDate("");
+    setCategory("Insumos");
   };
 
   const formatCurrency = (val: number) => 
@@ -206,7 +235,7 @@ export default function ExpensesPage() {
         </div>
         <Button
           variant="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={openNewModal}
           disabled={!hasOpenHarvest}
           title={!hasOpenHarvest ? 'Abra uma safra antes de lançar despesas' : ''}
         >
@@ -320,6 +349,13 @@ export default function ExpensesPage() {
                         </a>
                       )}
                       <button 
+                        onClick={() => openEditModal(expense)}
+                        className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-farm-600 hover:bg-farm-50 dark:hover:bg-farm-900/30 transition-colors mr-1"
+                        title="Editar"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button 
                         onClick={() => handleDelete(expense.id, expense.description)}
                         disabled={deletingId === expense.id}
                         className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
@@ -341,13 +377,15 @@ export default function ExpensesPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-              <h3 className="text-lg font-bold">Cadastrar Despesa</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">×</button>
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-farm-50/50 dark:bg-farm-900/10">
+              <h3 className="text-lg font-bold text-farm-900 dark:text-farm-400 flex items-center gap-2">
+                <FileText className="h-5 w-5" /> {editingId ? "Editar Despesa" : "Nova Despesa"}
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
             </div>
             
             <div className="overflow-y-auto p-6 flex-1">
-              <form id="expense-form" onSubmit={handleCreate} className="space-y-4">
+              <form id="expense-form" onSubmit={handleCreateOrUpdate} className="space-y-4">
                 
                 {/* Opcionais: Nome do Pagador & Recibo */}
                 <div className="p-4 bg-farm-50/50 dark:bg-farm-900/10 border border-farm-100 dark:border-farm-900/30 rounded-lg space-y-4 mb-2">
@@ -451,10 +489,11 @@ export default function ExpensesPage() {
 
               </form>
             </div>
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex gap-3 justify-end bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex justify-end gap-3 p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                 <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
                 <Button type="submit" form="expense-form" variant="primary" disabled={saving}>
-                  {saving ? "Salvando..." : "Salvar Despesa"}
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {editingId ? "Salvar" : "Cadastrar"}
                 </Button>
             </div>
           </div>
