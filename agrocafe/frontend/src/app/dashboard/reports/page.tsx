@@ -141,6 +141,13 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in print:bg-white print:p-0">
+      <style>{`
+        @media print {
+          @page { margin: 10mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .print-footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: #64748b; padding: 10px; border-top: 1px solid #e2e8f0; }
+        }
+      `}</style>
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
@@ -423,9 +430,21 @@ export default function ReportsPage() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 text-center text-xs text-slate-400 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-            Gerado pelo AgroCerradoCafé | {new Date().toLocaleString("pt-BR")}
+          {/* Web Footer */}
+          <div className="p-4 bg-slate-50 text-center text-xs text-slate-400 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 print:hidden">
+            Gerado pelo AgroCafe | {new Date().toLocaleString("pt-BR")}
+          </div>
+
+          {/* Print Footer */}
+          <div className="hidden print:flex flex-col items-center justify-center pt-6 mt-8 border-t border-slate-200 pb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Wheat className="h-6 w-6 text-slate-500" />
+              <span className="text-lg font-bold text-slate-500 uppercase tracking-widest">AgroCafe</span>
+            </div>
+            <p className="text-xs text-slate-400">Sistema Integrado de Gestão Agrícola</p>
+            <p className="text-[10px] text-slate-300 mt-2">Relatório gerado em {new Date().toLocaleString("pt-BR")}</p>
           </div>
         </div>
       ) : (

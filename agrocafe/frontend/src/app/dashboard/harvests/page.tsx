@@ -413,11 +413,11 @@ export default function HarvestsPage() {
                         <span className="font-bold text-slate-900 dark:text-white mb-1">Total dos Sócios</span>
                         <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                           <span>Total Pago:</span>
-                          <span className="font-bold">{formatCurrency(summary.settlement.reduce((acc, s) => acc + (s.paid || 0), 0))}</span>
+                          <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(summary.settlement.reduce((acc: any, s: any) => acc + (s.paid || 0), 0))}</span>
                         </div>
                         <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                           <span>Total Recebido:</span>
-                          <span className="font-bold">{formatCurrency(summary.settlement.reduce((acc, s) => acc + (s.received || 0), 0))}</span>
+                          <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(summary.settlement.reduce((acc: any, s: any) => acc + (s.received || 0), 0))}</span>
                         </div>
                       </div>
                     </div>
