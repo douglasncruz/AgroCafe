@@ -31,7 +31,7 @@ export default function ExpensesPage() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
-  const [category, setCategory] = useState("Insumos");
+  const [category, setCategory] = useState("Outros");
   const [farmId, setFarmId] = useState("");
   const [payerName, setPayerName] = useState("");
   const [harvestId, setHarvestId] = useState("");
@@ -155,7 +155,7 @@ export default function ExpensesPage() {
     setDescription("");
     setAmount("");
     setDate("");
-    setCategory("Insumos");
+    setCategory("Outros");
   };
 
   const formatCurrency = (val: number) => 
@@ -447,10 +447,13 @@ export default function ExpensesPage() {
                       value={category}
                       onChange={e => setCategory(e.target.value)}
                     >
-                      <option value="Insumos">Insumos (Adubo, etc)</option>
                       <option value="Mão de Obra">Mão de Obra</option>
-                      <option value="Maquinário">Maquinário/Combustível</option>
-                      <option value="Geral">Custos Gerais</option>
+                      <option value="Manutenção Máquinas e Implementos">Manutenção Máquinas e Implementos</option>
+                      <option value="Fertilizantes e Corretivos">Fertilizantes e Corretivos</option>
+                      <option value="Defensivos Agrícolas">Defensivos Agrícolas</option>
+                      <option value="Taxa Administração e Impostos">Taxa Administração e Impostos</option>
+                      <option value="Infraestrutura">Infraestrutura</option>
+                      <option value="Outros">Outros</option>
                     </select>
                   </div>
 

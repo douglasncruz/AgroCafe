@@ -377,14 +377,14 @@ export default function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         
         {/* Cashflow Chart */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Fluxo de Caixa Geral</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">Comparativo Mensal (Entradas vs Saídas)</p>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.cashflowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={data.cashflow || data.cashflowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
@@ -448,6 +448,58 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Expenses by Categorization */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col">
+          <div className="mb-2">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Categorização das Despesas</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Distribuição percentual por categoria</p>
+          </div>
+          <div className="h-[240px] w-full flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.expensesByCategorization || []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                  label={({ percent }) => percent ? `${(percent * 100).toFixed(1)}%` : ''}
+                  labelLine={false}
+                >
+                  {(data.expensesByCategorization || []).map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={((value: any) => formatCurrency(Number(value || 0))) as any} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            {(data.expensesByCategorization || []).map((category: any) => {
+              const totalCategorization = (data.expensesByCategorization || []).reduce((acc: number, curr: any) => acc + curr.value, 0);
+              const percentage = totalCategorization > 0 ? ((category.value / totalCategorization) * 100).toFixed(1) : "0.0";
+              return (
+                <div key={category.name} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }} />
+                    <span className="text-sm text-slate-600 dark:text-slate-300 truncate max-w-[150px]" title={category.name}>{category.name}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
+                      {formatCurrency(category.value)}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {percentage}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
         {/* Visão de Sociedade (Bar Chart) */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
           <div className="mb-6">

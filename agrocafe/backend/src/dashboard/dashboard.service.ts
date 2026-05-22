@@ -76,6 +76,7 @@ export class DashboardService {
 
     const farmTotals: Record<string, number> = {};
     const partnersMap: Record<string, number> = {};
+    const categoryTotals: Record<string, number> = {};
     let totalSacas = 0;
 
     expenses.forEach(exp => {
@@ -86,6 +87,9 @@ export class DashboardService {
       
       const farmName = exp.farm ? exp.farm.name : 'Sem Nome';
       farmTotals[farmName] = (farmTotals[farmName] || 0) + val;
+
+      const catName = exp.category || 'Outros';
+      categoryTotals[catName] = (categoryTotals[catName] || 0) + val;
 
       const pName = exp.partner ? exp.partner.name : exp.payer_name;
       if (pName) partnersMap[pName] = (partnersMap[pName] || 0) - val;
@@ -99,6 +103,8 @@ export class DashboardService {
       
       const catName = maint.machine ? `Manutenção: ${maint.machine.name}` : 'Manutenção Máquinas';
       farmTotals[catName] = (farmTotals[catName] || 0) + val;
+
+      categoryTotals['Manutenção Máquinas e Implementos'] = (categoryTotals['Manutenção Máquinas e Implementos'] || 0) + val;
     });
 
     revenues.forEach(rev => {
@@ -120,6 +126,15 @@ export class DashboardService {
         name: name.includes('Manutenção') ? name : `Despesas: ${name}`,
         value,
         color: colors[index % colors.length]
+      }));
+
+    const catColors = ["#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f59e0b", "#64748b", "#84cc16"];
+    const expensesByCategorization = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: catColors[index % catColors.length]
       }));
 
     let cashflowData = monthlyData.filter(d => d.despesas > 0 || d.receitas > 0);
@@ -159,8 +174,9 @@ export class DashboardService {
     }
 
     return {
-      cashflowData,
+      cashflow: cashflowData,
       expensesByCategory,
+      expensesByCategorization,
       totalDespesas,
       totalReceitas,
       lucroEstimado: totalReceitas - totalDespesas,
