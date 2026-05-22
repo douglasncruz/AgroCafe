@@ -21,10 +21,10 @@ export class Harvest {
   year: number; // Ano principal da safra (ex: 2024)
 
   @Column({ type: 'date', nullable: true })
-  start_date: Date;
+  start_date: Date | null;
 
   @Column({ type: 'date', nullable: true })
-  end_date: Date;
+  end_date: Date | null;
 
   @Index()
   @Column({ default: true })
