@@ -46,7 +46,7 @@ export default function LoginPage() {
           <div 
             className="absolute inset-0 opacity-40 mix-blend-overlay z-0"
             style={{ 
-              backgroundImage: 'url("https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=2574&auto=format&fit=crop")',
+              backgroundImage: 'url("/login-bg.png")',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
