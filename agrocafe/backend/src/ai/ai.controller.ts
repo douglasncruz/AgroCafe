@@ -3,7 +3,7 @@ import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { DashboardService } from '../dashboard/dashboard.service';
 
-@Controller('ai')
+@Controller('api/ai')
 export class AiController {
   constructor(
     private readonly aiService: AiService,

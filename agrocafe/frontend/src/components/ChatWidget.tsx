@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { api } from '@/services/api';
+
 export default function ChatWidget() {
   const [token, setToken] = useState<string | null>(null);
   
@@ -32,18 +34,7 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ message: userMessage })
-      });
-
-      if (!res.ok) throw new Error('Falha na API');
-
-      const data = await res.json();
+      const data = await api.post('/ai/chat', { message: userMessage }, token);
       setMessages((prev) => [...prev, { role: 'ai', text: data.reply }]);
     } catch (error) {
       console.error(error);
