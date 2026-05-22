@@ -386,7 +386,7 @@ export default function PartnersPage() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
               <h3 className="text-lg font-bold">{editingId ? "Editar Sócio" : "Novo Sócio"}</h3>
@@ -441,8 +441,8 @@ export default function PartnersPage() {
 
       {/* Statement Modal */}
       {statementModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-scale-in border border-slate-200 dark:border-slate-800">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95dvh] sm:max-h-[90dvh] flex flex-col animate-scale-in border border-slate-200 dark:border-slate-800">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
               <div>
                 <h3 className="text-xl font-bold flex items-center gap-2">

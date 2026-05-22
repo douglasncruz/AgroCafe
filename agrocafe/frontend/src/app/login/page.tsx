@@ -38,7 +38,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-[100dvh] flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
       {/* Left panel - Image/Brand */}
       <div className="hidden md:flex flex-1 relative flex-col justify-between p-10 text-white overflow-hidden">
         <div className="absolute inset-0 bg-farm-900 z-0">

@@ -300,7 +300,7 @@ export default function MachinesPage() {
 
       {/* MODAL MÁQUINA */}
       {isMachineModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-in">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
               <h3 className="text-lg font-bold">Cadastrar Ativo / Máquina</h3>
@@ -354,7 +354,7 @@ export default function MachinesPage() {
 
       {/* MODAL MANUTENÇÃO */}
       {isMaintModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-in">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10">
               <h3 className="text-lg font-bold text-amber-900 dark:text-amber-500">Registrar Manutenção</h3>

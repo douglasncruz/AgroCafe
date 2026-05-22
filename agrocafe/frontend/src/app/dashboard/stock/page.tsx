@@ -370,8 +370,8 @@ export default function StockPage() {
 
       {/* MODAL NOVA MOVIMENTAÇÃO */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-2xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-800">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-2xl overflow-hidden animate-scale-in max-h-[95dvh] sm:max-h-[90dvh] flex flex-col border border-slate-200 dark:border-slate-800">
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-teal-50/50 dark:bg-teal-900/10">
               <h3 className="text-lg font-bold text-teal-900 dark:text-teal-400 flex items-center gap-2">
                 <Package className="h-5 w-5" /> Registrar Movimentação de Estoque

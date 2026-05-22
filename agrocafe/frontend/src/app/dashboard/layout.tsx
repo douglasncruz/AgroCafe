@@ -113,10 +113,10 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex selection:bg-farm-200 selection:text-farm-900">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex selection:bg-farm-200 selection:text-farm-900">
       
       {/* Sidebar - Desktop */}
-      <aside className={`fixed md:sticky top-0 h-screen flex flex-col w-72 border-r border-slate-200/60 bg-white/60 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/60 z-40 transition-transform duration-300 print:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+      <aside className={`fixed md:sticky top-0 h-[100dvh] flex flex-col w-72 border-r border-slate-200/60 bg-white/60 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/60 z-40 transition-transform duration-300 print:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         
         {/* Logo Area */}
         <div className="h-20 flex items-center px-6 border-b border-slate-200/50 dark:border-slate-800/50">
@@ -200,7 +200,7 @@ export default function DashboardLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 max-h-[100dvh] overflow-hidden">
         
         {/* Sleek Topbar */}
         <header className="h-20 flex items-center justify-between px-6 lg:px-10 border-b border-slate-200/50 bg-white/70 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/70 z-10 print:hidden">

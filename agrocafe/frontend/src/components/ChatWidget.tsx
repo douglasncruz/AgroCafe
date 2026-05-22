@@ -59,11 +59,11 @@ export default function ChatWidget() {
   if (!token) return null; // Não mostra se não estiver logado
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
       {/* Botão de abrir/fechar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 hover:scale-105 transition-transform"
+        className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 hover:scale-105 transition-transform"
       >
         {isOpen ? (
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,7 +78,7 @@ export default function ChatWidget() {
 
       {/* Janela de Chat */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-80 sm:w-96 h-[500px] max-h-[80vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="absolute bottom-16 sm:bottom-20 right-0 w-[calc(100vw-2rem)] sm:w-96 h-[400px] sm:h-[500px] max-h-[80dvh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-emerald-600 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
