@@ -20,7 +20,37 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, is_demo: user.is_demo };
+    await this.usersService.updateLastLogin(user.id);
+    
+    // Super Admin hardcode
+    let userPermissions = user.permissions || {};
+    let roleName = user.role_name || 'Usuário';
+    
+    if (user.email === 'douglas.cruz@agrocerradocafe.com.br') {
+      roleName = 'Administrador Supremo';
+      userPermissions = {
+        users: { view: true, edit: true, delete: true },
+        farms: { view: true, edit: true, delete: true },
+        harvests: { view: true, edit: true, delete: true },
+        expenses: { view: true, edit: true, delete: true },
+        revenues: { view: true, edit: true, delete: true },
+        reports: { view: true, edit: true, delete: true },
+        partners: { view: true, edit: true, delete: true },
+        stock: { view: true, edit: true, delete: true },
+        machines: { view: true, edit: true, delete: true },
+        agrochemicals: { view: true, edit: true, delete: true },
+        audit: { view: true, edit: true, delete: true },
+      };
+    }
+
+    const payload = { 
+      email: user.email, 
+      sub: user.id, 
+      is_demo: user.is_demo,
+      permissions: userPermissions,
+      role_name: roleName
+    };
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -28,6 +58,10 @@ export class AuthService {
         name: user.name,
         email: user.email,
         is_demo: user.is_demo,
+        permissions: userPermissions,
+        role_name: roleName,
+        avatar_base64: user.avatar_base64,
+        phone: user.phone
       }
     };
   }

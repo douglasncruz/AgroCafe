@@ -58,7 +58,18 @@ export default function DashboardLayout({
     router.push("/login");
   };
 
-  const isAdmin = user?.email === 'admin@agrocerradocafe.com.br';
+  const permissions = user?.permissions || {};
+  
+  const hasPermission = (module: string) => {
+    // Se o usuário não tem o objeto permissions, assumimos true (retrocompatibilidade)
+    if (!user || !user.permissions) return true; 
+    // Se explicitamente definido
+    if (permissions[module] && permissions[module].view !== undefined) {
+      return permissions[module].view;
+    }
+    // Default fallback
+    return true;
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -135,29 +146,29 @@ export default function DashboardLayout({
           <div className="space-y-1">
             <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Visão Geral</p>
             <NavItem href="/dashboard" icon={LayoutDashboard}>Painel 360°</NavItem>
-            <NavItem href="/dashboard/harvests" icon={Wheat} activeColor="text-farm-700 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400">Safras</NavItem>
-            <NavItem href="/dashboard/plots" icon={Map} activeColor="text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-500">Meus Talhões</NavItem>
-            <NavItem href="/dashboard/agrochemicals" icon={FlaskConical} activeColor="text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400">Defensivos & Receitas</NavItem>
+            {hasPermission('harvests') && <NavItem href="/dashboard/harvests" icon={Wheat} activeColor="text-farm-700 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400">Safras</NavItem>}
+            {hasPermission('plots') && <NavItem href="/dashboard/plots" icon={Map} activeColor="text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-500">Meus Talhões</NavItem>}
+            {hasPermission('agrochemicals') && <NavItem href="/dashboard/agrochemicals" icon={FlaskConical} activeColor="text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400">Defensivos & Receitas</NavItem>}
           </div>
 
           {/* Section: Gestão Financeira */}
           <div className="space-y-1">
             <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Finanças & Ativos</p>
-            <NavItem href="/dashboard/revenues" icon={TrendingUp} activeColor="text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400">Receitas (Vendas)</NavItem>
-            <NavItem href="/dashboard/expenses" icon={TrendingDown} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Despesas & Custos</NavItem>
-            <NavItem href="/dashboard/machines" icon={Settings} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Maquinário & Frota</NavItem>
-            <NavItem href="/dashboard/stock" icon={Package} activeColor="text-teal-700 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400">Controle de Estoque</NavItem>
+            {hasPermission('revenues') && <NavItem href="/dashboard/revenues" icon={TrendingUp} activeColor="text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400">Receitas (Vendas)</NavItem>}
+            {hasPermission('expenses') && <NavItem href="/dashboard/expenses" icon={TrendingDown} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Despesas & Custos</NavItem>}
+            {hasPermission('machines') && <NavItem href="/dashboard/machines" icon={Settings} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Maquinário & Frota</NavItem>}
+            {hasPermission('stock') && <NavItem href="/dashboard/stock" icon={Package} activeColor="text-teal-700 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400">Controle de Estoque</NavItem>}
           </div>
 
           {/* Section: Estratégia */}
           <div className="space-y-1">
             <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Estratégia & BI</p>
-            <NavItem href="/dashboard/partners" icon={Users} activeColor="text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400">Sócios & Acertos</NavItem>
-            <NavItem href="/dashboard/reports" icon={BarChart3} activeColor="text-farm-700 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400">Relatórios (DRE)</NavItem>
-            <NavItem href="/dashboard/audit" icon={ShieldAlert} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Auditoria & Compliance</NavItem>
+            {hasPermission('partners') && <NavItem href="/dashboard/partners" icon={Users} activeColor="text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400">Sócios & Acertos</NavItem>}
+            {hasPermission('reports') && <NavItem href="/dashboard/reports" icon={BarChart3} activeColor="text-farm-700 bg-farm-50 dark:farm-900/20 dark:text-farm-400">Relatórios (DRE)</NavItem>}
+            {hasPermission('audit') && <NavItem href="/dashboard/audit" icon={ShieldAlert} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Auditoria & Compliance</NavItem>}
           </div>
 
-          {isAdmin && (
+          {hasPermission('users') && (
             <div className="space-y-1">
               <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Administração</p>
               <NavItem href="/dashboard/users" icon={ShieldCheck} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Acessos de Usuários</NavItem>
@@ -168,9 +179,13 @@ export default function DashboardLayout({
         {/* User Profile Area */}
         <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 mb-2 cursor-pointer hover:border-farm-300 transition-colors">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-farm-500 to-coffee-600 flex items-center justify-center text-white font-bold shadow-md text-sm">
-              {user ? getInitials(user.name) : "??"}
-            </div>
+            {user?.avatar_base64 ? (
+              <img src={user.avatar_base64} alt="Avatar" className="h-10 w-10 rounded-full object-cover shadow-md" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-farm-500 to-coffee-600 flex items-center justify-center text-white font-bold shadow-md text-sm">
+                {user ? getInitials(user.name) : "??"}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {user?.name || "Carregando..."}
