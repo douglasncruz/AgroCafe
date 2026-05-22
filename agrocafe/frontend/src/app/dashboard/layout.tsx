@@ -387,6 +387,8 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+
+      <ChatWidget />
     </div>
   );
 }
