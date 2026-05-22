@@ -26,3 +26,7 @@ npm-debug.log*
 dist/
 .next/
 build/
+rclone.exe
+rclone.conf
+.env
+*.log

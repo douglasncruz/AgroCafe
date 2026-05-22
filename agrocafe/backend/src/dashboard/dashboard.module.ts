@@ -14,6 +14,7 @@ import { Partner } from '../partners/entities/partner.entity';
     TypeOrmModule.forFeature([Expense, Farm, Revenue, Maintenance, Machine, Partner]),
   ],
   controllers: [DashboardController],
-  providers: [DashboardService]
+  providers: [DashboardService],
+  exports: [DashboardService]
 })
 export class DashboardModule {}

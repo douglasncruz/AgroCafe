@@ -412,15 +412,15 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Centros de Custos</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">Distribuição entre Fazendas e Manutenções</p>
           </div>
-          <div className="h-[240px] w-full flex-1">
+          <div className="h-[240px] min-h-[240px] w-full shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data.expensesByCategory}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -454,15 +454,15 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Categorização das Despesas</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">Distribuição percentual por categoria</p>
           </div>
-          <div className="h-[240px] w-full flex-1">
+          <div className="h-[240px] min-h-[240px] w-full shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data.expensesByCategorization || []}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={5}
                   dataKey="value"
                   label={({ percent }) => percent ? `${(percent * 100).toFixed(1)}%` : ''}

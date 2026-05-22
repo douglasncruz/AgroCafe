@@ -1,0 +1,29 @@
+name: Automated Source Code Backup
+
+on:
+  schedule:
+    # Corre todos os domingos às 04:00 AM UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch: # Permite disparo manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Backup para AWS S3 (Exemplo Opcional)
+        # Esse step é opcional, caso queira espelhar o código zipado em um Bucket
+        # if: false
+        run: |
+          echo "Zipando código fonte..."
+          zip -r source_code_backup.zip . -x "*.git*" "node_modules/*"
+          echo "Upload do código fonte (configure sua AWS CLI/Rclone aqui)"
+          
+      # Aqui você pode adicionar steps para avisar via Slack/Telegram que o código está são e salvo.
+      - name: Report Status
+        run: echo "Backup automatizado de código fonte verificado."

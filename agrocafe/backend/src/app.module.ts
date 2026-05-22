@@ -33,6 +33,7 @@ import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
 import { Harvest } from './harvests/entities/harvest.entity';
 import { StockItem } from './stock/entities/stock-item.entity';
 import { StockTransaction } from './stock/entities/stock-transaction.entity';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { StockTransaction } from './stock/entities/stock-transaction.entity';
     HarvestsModule,
     DataImportModule,
     StockModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [

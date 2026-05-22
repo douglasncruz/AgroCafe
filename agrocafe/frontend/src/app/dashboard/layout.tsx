@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHarvest } from "@/context/HarvestContext";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function DashboardLayout({
   children,

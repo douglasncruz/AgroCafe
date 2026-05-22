@@ -2,17 +2,49 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: agrocafe_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: agrocafe
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-agrocafe}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrocafe_backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-agrocafe}
+      - JWT_SECRET=${JWT_SECRET:-super-secret-jwt-key}
+    volumes:
+      - uploads:/app/uploads
+      - sqlite_data:/app/data # For fallback sqlite use
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: agrocafe_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:3001
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
+  uploads:
+  sqlite_data:
