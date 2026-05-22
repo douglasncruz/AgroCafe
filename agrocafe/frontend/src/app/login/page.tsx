@@ -88,8 +88,8 @@ export default function LoginPage() {
               Voltar ao início
             </Link>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Acesse sua conta</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-2">
-              Insira seu email e senha para acessar o painel.
+            <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm sm:text-base">
+              Insira seu e-mail e senha para acessar sua fazenda digital.
             </p>
           </div>
 
