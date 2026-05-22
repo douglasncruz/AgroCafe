@@ -38,7 +38,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const { farms, selectedFarm, selectFarm, harvests, selectedHarvest, selectHarvest, hasOpenHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<{name: string, email: string} | null>(null);
+  const [user, setUser] = useState<{name: string, email: string, is_demo?: boolean} | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -200,7 +200,15 @@ export default function DashboardLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 max-h-[100dvh] overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 max-h-[100dvh] overflow-hidden relative">
+        
+        {/* Demo Banner */}
+        {user?.is_demo && (
+          <div className="bg-amber-500 text-white px-4 py-2 text-center text-sm font-bold shadow-md z-50 flex items-center justify-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Você está no Ambiente de Demonstração (Sandbox). Alguns recursos estão desabilitados.
+          </div>
+        )}
         
         {/* Sleek Topbar */}
         <header className="h-20 flex items-center justify-between px-6 lg:px-10 border-b border-slate-200/50 bg-white/70 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/70 z-10 print:hidden">

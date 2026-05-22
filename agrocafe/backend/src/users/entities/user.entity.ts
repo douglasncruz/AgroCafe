@@ -17,6 +17,9 @@ export class User {
   @Column({ default: true })
   is_active: boolean;
 
+  @Column({ default: false })
+  is_demo: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 
