@@ -82,7 +82,7 @@ export default function ChatWidget() {
               </div>
               <div>
                 <h3 className="font-bold text-white leading-tight">Chico Cafezal</h3>
-                <p className="text-emerald-100 text-xs">Assistente com Inteligência Artificial</p>
+                <p className="text-emerald-100 text-xs">Assistente Virtual</p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-emerald-100 hover:text-white">
