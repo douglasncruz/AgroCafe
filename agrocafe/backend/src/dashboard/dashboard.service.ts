@@ -31,8 +31,6 @@ export class DashboardService {
       expenseQuery.where('farm.id = :farmId', { farmId });
     }
 
-    const expenses = await expenseQuery.getMany();
-
     const revenueQuery = this.revenueRepository.createQueryBuilder('revenue')
       .leftJoinAndSelect('revenue.farm', 'farm')
       .leftJoinAndSelect('revenue.partner', 'partner');
@@ -45,8 +43,6 @@ export class DashboardService {
       revenueQuery.where('farm.id = :farmId', { farmId });
     }
 
-    const revenues = await revenueQuery.getMany();
-
     const maintenanceQuery = this.maintenanceRepo.createQueryBuilder('maint')
       .leftJoinAndSelect('maint.machine', 'machine')
       .leftJoin('machine.farm', 'farm');
@@ -55,8 +51,6 @@ export class DashboardService {
       maintenanceQuery.where('farm.id = :farmId', { farmId });
     }
 
-    const maintenances = await maintenanceQuery.getMany();
-
     const machineQuery = this.machineRepo.createQueryBuilder('machine')
       .leftJoin('machine.farm', 'farm');
 
@@ -64,7 +58,13 @@ export class DashboardService {
       machineQuery.where('farm.id = :farmId', { farmId });
     }
 
-    const machinesCount = await machineQuery.getCount();
+    // Executa as queries paralelamente para reduzir o tempo de latência no banco de dados (Painel 360)
+    const [expenses, revenues, maintenances, machinesCount] = await Promise.all([
+      expenseQuery.getMany(),
+      revenueQuery.getMany(),
+      maintenanceQuery.getMany(),
+      machineQuery.getCount()
+    ]);
 
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     
