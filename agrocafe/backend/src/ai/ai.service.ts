@@ -26,7 +26,7 @@ export class AiService {
 
     try {
       const model = this.genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-latest',
         systemInstruction: `Você é o Agro Copilot, o assistente virtual super inteligente do ERP Agro Café. 
 Sua missão é ajudar o produtor rural a gerenciar sua fazenda, entender relatórios e navegar no sistema.
 Contexto atual do usuário: ${JSON.stringify(contextData)}
