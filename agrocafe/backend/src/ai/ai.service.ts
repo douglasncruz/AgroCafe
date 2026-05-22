@@ -36,9 +36,9 @@ Responda de forma clara, educada, e use formatação markdown se precisar.`
       const result = await model.generateContent(message);
       const response = await result.response;
       return response.text();
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Erro ao chamar Google Gemini API', error);
-      return 'Desculpe, encontrei um erro ao processar sua solicitação neste momento.';
+      return `Desculpe, encontrei um erro ao processar sua solicitação neste momento. Detalhe do erro: ${error.message}`;
     }
   }
 }
