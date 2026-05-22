@@ -13,7 +13,7 @@ export default function ChatWidget() {
   }, []);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
-    { role: 'ai', text: 'Olá! Sou o Agro Copilot. Como posso ajudar com sua fazenda hoje?' }
+    { role: 'ai', text: 'Olá! Sou o Chico Cafezal. Como posso ajudar com sua fazenda hoje?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +81,7 @@ export default function ChatWidget() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-bold text-white leading-tight">Agro Copilot</h3>
+                <h3 className="font-bold text-white leading-tight">Chico Cafezal</h3>
                 <p className="text-emerald-100 text-xs">Assistente com Inteligência Artificial</p>
               </div>
             </div>

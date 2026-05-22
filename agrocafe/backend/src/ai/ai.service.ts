@@ -21,13 +21,13 @@ export class AiService {
   async processChat(message: string, contextData: any = {}): Promise<string> {
     if (!this.isAvailable) {
       // Retorna Mock se não tiver API key
-      return "Olá! Sou o assistente de IA do Agro Café (Mock Mode). Para interagir com inteligência real, por favor, configure a variável `GEMINI_API_KEY` no `.env`.";
+      return "Olá! Sou o assistente de IA Chico Cafezal (Mock Mode). Para interagir com inteligência real, por favor, configure a variável `GEMINI_API_KEY` no `.env`.";
     }
 
     try {
       const model = this.genAI.getGenerativeModel({ 
         model: 'gemini-flash-latest',
-        systemInstruction: `Você é o Agro Copilot, o assistente virtual super inteligente do ERP Agro Café. 
+        systemInstruction: `Você é o Chico Cafezal, o assistente virtual super inteligente do ERP Agro Café. 
 Sua missão é ajudar o produtor rural a gerenciar sua fazenda, entender relatórios e navegar no sistema.
 Contexto atual do usuário: ${JSON.stringify(contextData)}
 Responda de forma clara, educada, e use formatação markdown se precisar.` 
