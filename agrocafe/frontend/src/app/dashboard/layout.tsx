@@ -38,7 +38,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const { farms, selectedFarm, selectFarm, harvests, selectedHarvest, selectHarvest, hasOpenHarvest } = useHarvest();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<{name: string, email: string, is_demo?: boolean} | null>(null);
+  const [user, setUser] = useState<{name: string, email: string, is_demo?: boolean, permissions?: Record<string, any>, avatar_base64?: string} | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
