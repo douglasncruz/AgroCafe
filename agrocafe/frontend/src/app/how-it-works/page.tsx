@@ -35,11 +35,11 @@ export default function HowItWorks() {
       {/* Feature list with icons */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-5xl px-4">
         {[
-          { icon: "📊", title: "Controle Financeiro", description: "Registre despesas e receitas, visualize fluxo de caixa em tempo real." },
+          { icon: "🤖", title: "Diagnóstico Agrícola IA", description: "Envie fotos da lavoura e nossa Inteligência Artificial identificará pragas e deficiências em segundos." },
+          { icon: "🔔", title: "Notificações Inteligentes", description: "Receba alertas em tempo real sobre despesas elevadas, ações críticas e movimentações importantes." },
+          { icon: "💬", title: "Chico Cafezal (IA)", description: "Seu assistente virtual especialista no agro para tirar dúvidas e ajudar na gestão." },
+          { icon: "📊", title: "Painel 360", description: "Dashboard financeiro ultrarrápido focado na safra atual com comparativos avançados." },
           { icon: "🌱", title: "Gestão por Talhão", description: "Aloque custos e receitas por área, identifique os talhões mais lucrativos." },
-          { icon: "📈", title: "Comparativo de Safras", description: "Analise histórico de produção, compare custos e produtividade entre ciclos." },
-          { icon: "👥", title: "Controle de Fornecedores", description: "Cadastro completo e histórico de compras de insumos." },
-          { icon: "🧠", title: "Categorização Inteligente", description: "Classifique gastos por tipo e descubra oportunidades de otimização." },
           { icon: "🔒", title: "Segurança de Dados", description: "Criptografia de ponta a ponta e backups automáticos diários." },
         ].map((f, i) => (
           <div key={i} className="flex flex-col items-center text-center p-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-shadow">
