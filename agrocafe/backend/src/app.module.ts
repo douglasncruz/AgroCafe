@@ -36,6 +36,7 @@ import { Harvest } from './harvests/entities/harvest.entity';
 import { StockItem } from './stock/entities/stock-item.entity';
 import { StockTransaction } from './stock/entities/stock-transaction.entity';
 import { Notification } from './notifications/entities/notification.entity';
+import { Diagnosis } from './ai/entities/diagnosis.entity';
 import { AiModule } from './ai/ai.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -72,7 +73,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         return {
           type: 'sqlite',
           database: 'agrocafe.sqlite',
-          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification],
+          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis],
           synchronize: process.env.NODE_ENV !== 'production',
         };
       },

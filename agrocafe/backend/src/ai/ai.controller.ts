@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, Query, Req } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { DashboardService } from '../dashboard/dashboard.service';
@@ -30,5 +30,22 @@ export class AiController {
       success: true,
       reply
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('diagnosis')
+  async diagnoseImage(
+    @Request() req: any,
+    @Body('farmId') farmId: string,
+    @Body('imageBase64') imageBase64: string
+  ) {
+    const userId = req.user?.id;
+    return this.aiService.analyzeCropImage(userId, farmId, imageBase64);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('diagnosis/history')
+  async getDiagnosisHistory(@Query('farmId') farmId: string) {
+    return this.aiService.getDiagnosisHistory(farmId);
   }
 }

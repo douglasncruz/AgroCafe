@@ -160,7 +160,13 @@ export default function DashboardLayout({
             {hasPermission('revenues') && <NavItem href="/dashboard/revenues" icon={TrendingUp} activeColor="text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400">Receitas (Vendas)</NavItem>}
             {hasPermission('expenses') && <NavItem href="/dashboard/expenses" icon={TrendingDown} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Despesas & Custos</NavItem>}
             {hasPermission('machines') && <NavItem href="/dashboard/machines" icon={Settings} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Maquinário & Frota</NavItem>}
-            {hasPermission('stock') && <NavItem href="/dashboard/stock" icon={Package} activeColor="text-teal-700 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400">Controle de Estoque</NavItem>}
+            {hasPermission('stock') && <NavItem href="/dashboard/stock" icon={Package} activeColor="text-orange-900 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">Estoque de Insumos</NavItem>}
+          </div>
+
+          {/* Section: Inteligência Artificial */}
+          <div className="space-y-1">
+            <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Inteligência Artificial</p>
+            <NavItem href="/dashboard/diagnosis" icon={FlaskConical} activeColor="text-indigo-900 bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400">Diagnóstico Inteligente</NavItem>
           </div>
 
           {/* Section: Estratégia */}
