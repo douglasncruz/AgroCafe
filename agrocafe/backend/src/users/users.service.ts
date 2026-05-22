@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -16,7 +18,9 @@ export class UsersService {
 
   async create(userData: Partial<User>): Promise<User> {
     const user = this.usersRepository.create(userData);
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    this.eventEmitter.emit('user.created', saved);
+    return saved;
   }
 
   async findAll() {

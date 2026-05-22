@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Expense } from './entities/expense.entity';
 import { Farm } from '../farms/entities/farm.entity';
 import { HarvestValidationService } from '../harvests/harvest-validation.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ExpensesService {
@@ -11,6 +12,7 @@ export class ExpensesService {
     @InjectRepository(Expense) private expenseRepo: Repository<Expense>,
     @InjectRepository(Farm) private farmRepo: Repository<Farm>,
     private harvestValidation: HarvestValidationService,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async findAll() {
@@ -56,7 +58,9 @@ export class ExpensesService {
       farm: farm || undefined,
       harvest: { id: harvest.id },
     });
-    return this.expenseRepo.save(expense);
+    const saved = await this.expenseRepo.save(expense);
+    this.eventEmitter.emit('expense.created', saved);
+    return saved;
   }
 
   async update(id: string, updateDto: any) {

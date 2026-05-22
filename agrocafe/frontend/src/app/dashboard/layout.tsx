@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHarvest } from "@/context/HarvestContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import NotificationBell from "@/components/NotificationBell";
 import ChatWidget from "@/components/ChatWidget";
 
 export default function DashboardLayout({
@@ -124,9 +126,10 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex selection:bg-farm-200 selection:text-farm-900">
-      
-      {/* Sidebar - Desktop */}
+    <NotificationProvider farmId={selectedFarm?.id}>
+      <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 flex selection:bg-farm-200 selection:text-farm-900">
+        
+        {/* Sidebar - Desktop */}
       <aside className={`fixed md:sticky top-0 h-[100dvh] flex flex-col w-72 border-r border-slate-200/60 bg-white/60 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/60 z-40 transition-transform duration-300 print:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         
         {/* Logo Area */}
@@ -278,12 +281,7 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-3 sm:gap-5">
-            <button className="relative p-2 text-slate-400 hover:text-farm-600 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-              <Bell className="h-5 w-5" />
-              {!hasOpenHarvest && (
-                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-slate-950"></span>
-              )}
-            </button>
+            <NotificationBell />
             {/* Farm Selector */}
             {farms.length > 0 && (
               <div className="relative group">
@@ -413,5 +411,6 @@ export default function DashboardLayout({
 
       <ChatWidget />
     </div>
+    </NotificationProvider>
   );
 }

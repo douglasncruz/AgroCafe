@@ -22,6 +22,7 @@ import { AuditModule } from './audit/audit.module';
 import { HarvestsModule } from './harvests/harvests.module';
 import { DataImportModule } from './data-import/data-import.module';
 import { StockModule } from './stock/stock.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { User } from './users/entities/user.entity';
 import { Farm } from './farms/entities/farm.entity';
 import { Plot } from './plots/entities/plot.entity';
@@ -34,12 +35,15 @@ import { Agrochemical } from './agrochemicals/entities/agrochemical.entity';
 import { Harvest } from './harvests/entities/harvest.entity';
 import { StockItem } from './stock/entities/stock-item.entity';
 import { StockTransaction } from './stock/entities/stock-transaction.entity';
+import { Notification } from './notifications/entities/notification.entity';
 import { AiModule } from './ai/ai.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,
@@ -68,8 +72,8 @@ import { AiModule } from './ai/ai.module';
         return {
           type: 'sqlite',
           database: 'agrocafe.sqlite',
-          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction],
-          synchronize: true,
+          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification],
+          synchronize: process.env.NODE_ENV !== 'production',
         };
       },
       inject: [ConfigService],
@@ -89,6 +93,7 @@ import { AiModule } from './ai/ai.module';
     DataImportModule,
     StockModule,
     AiModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
