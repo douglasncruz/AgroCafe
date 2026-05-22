@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsInt, Min, Max, IsDateString } from 'class-validator';
 
 export class CreateHarvestDto {
   @IsNotEmpty({ message: 'O nome da safra é obrigatório.' })
@@ -18,4 +18,12 @@ export class CreateHarvestDto {
   @IsNotEmpty({ message: 'O ID da fazenda é obrigatório.' })
   @IsString()
   farmId: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'A data de início deve ser uma data válida.' })
+  start_date?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'A data de fim deve ser uma data válida.' })
+  end_date?: string;
 }

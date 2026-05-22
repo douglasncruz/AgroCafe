@@ -80,7 +80,8 @@ export class HarvestsService {
       farm,
       is_active: true, // Nova safra aberta sempre se torna a ativa
       status: HarvestStatus.ABERTA,
-      start_date: new Date(),
+      start_date: dto.start_date ? new Date(dto.start_date) : new Date(),
+      end_date: dto.end_date ? new Date(dto.end_date) : null,
     });
 
     // Desativar outras safras desta fazenda
@@ -101,8 +102,8 @@ export class HarvestsService {
     if (dto.name !== undefined) harvest.name = dto.name;
     if (dto.year !== undefined) harvest.year = dto.year;
     if (dto.notes !== undefined) harvest.notes = dto.notes;
-    if (dto.start_date !== undefined) harvest.start_date = new Date(dto.start_date);
-    if (dto.end_date !== undefined) harvest.end_date = new Date(dto.end_date);
+    if (dto.start_date !== undefined) harvest.start_date = dto.start_date ? new Date(dto.start_date) : null;
+    if (dto.end_date !== undefined) harvest.end_date = dto.end_date ? new Date(dto.end_date) : null;
 
     return this.harvestsRepository.save(harvest);
   }
