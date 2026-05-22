@@ -52,8 +52,12 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
       const data = await api.get(`/harvests/farm/${farmId}`, token);
       setHarvests(data);
       
+      const openHarvest = data.find((h: Harvest) => h.status === 'Aberta');
       const active = data.find((h: Harvest) => h.is_active);
-      if (active) {
+      
+      if (openHarvest) {
+        setSelectedHarvest(openHarvest);
+      } else if (active) {
         setSelectedHarvest(active);
       } else if (data.length > 0) {
         setSelectedHarvest(data[0]);
