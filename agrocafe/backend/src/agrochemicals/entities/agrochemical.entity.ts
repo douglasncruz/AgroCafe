@@ -1,5 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne , JoinColumn } from 'typeorm';
 import { Farm } from '../../farms/entities/farm.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
+
 
 @Entity('agrochemicals')
 export class Agrochemical {
@@ -42,6 +44,13 @@ export class Agrochemical {
   @Column({ nullable: true })
   recipe_url: string; // Link para a foto/PDF da receita agronômica
 
-  @CreateDateColumn()
+  
+  @Column({ nullable: true })
+  tenant_id: string;
+
+  @ManyToOne(() => Tenant, { nullable: true })
+  @JoinColumn({ name: 'tenant_id' })
+  tenant: Tenant;
+@CreateDateColumn()
   created_at: Date;
 }

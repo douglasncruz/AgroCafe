@@ -1,6 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany , JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Harvest } from '../../harvests/entities/harvest.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
+
 
 @Entity('farms')
 export class Farm {
@@ -25,7 +27,14 @@ export class Farm {
   @OneToMany(() => Harvest, (harvest) => harvest.farm)
   harvests: Harvest[];
 
-  @CreateDateColumn()
+  
+  @Column({ nullable: true })
+  tenant_id: string;
+
+  @ManyToOne(() => Tenant, { nullable: true })
+  @JoinColumn({ name: 'tenant_id' })
+  tenant: Tenant;
+@CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()

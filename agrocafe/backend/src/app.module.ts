@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -39,6 +39,11 @@ import { Notification } from './notifications/entities/notification.entity';
 import { Diagnosis } from './ai/entities/diagnosis.entity';
 import { AiModule } from './ai/ai.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ContextMiddleware } from './common/middleware/context.middleware';
+import { SecurityLogsModule } from './security-logs/security-logs.module';
+import { SecurityLog } from './security-logs/entities/security-log.entity';
+import { TenantsModule } from './tenants/tenants.module';
+import { Tenant } from './tenants/entities/tenant.entity';
 
 @Module({
   imports: [
@@ -62,7 +67,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
           return {
             type: 'postgres',
             url: databaseUrl,
-            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction],
+            entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis, SecurityLog, Tenant],
             synchronize: true, // Habilitado para criar as tabelas no Supabase durante a instalação
             ssl: {
               rejectUnauthorized: false,
@@ -73,7 +78,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         return {
           type: 'sqlite',
           database: 'agrocafe.sqlite',
-          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis],
+          entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis, SecurityLog, Tenant],
           synchronize: process.env.NODE_ENV !== 'production',
         };
       },
@@ -95,6 +100,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     StockModule,
     AiModule,
     NotificationsModule,
+    SecurityLogsModule,
+    TenantsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -105,4 +112,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     }
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ContextMiddleware).forRoutes('*');
+  }
+}
+

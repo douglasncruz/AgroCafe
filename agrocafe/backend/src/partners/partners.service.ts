@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Partner } from './entities/partner.entity';
 import { Expense } from '../expenses/entities/expense.entity';
 import { Revenue } from '../revenues/entities/revenue.entity';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class PartnersService {
@@ -13,8 +14,14 @@ export class PartnersService {
     @InjectRepository(Revenue) private revenueRepo: Repository<Revenue>,
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll(farmId: string) {
-    return this.partnerRepo.find({ where: { farm: { id: farmId } } });
+    return this.partnerRepo.find({ where: { farm: { id: farmId }, tenant_id: this.getTenantId() } });
   }
 
   async create(dto: any) {
@@ -30,7 +37,7 @@ export class PartnersService {
   }
 
   async update(id: string, dto: any) {
-    const partner = await this.partnerRepo.findOne({ where: { id } });
+    const partner = await this.partnerRepo.findOne({ where: { id, tenant_id: this.getTenantId() } });
     if (!partner) throw new NotFoundException('Sócio não encontrado.');
     
     Object.assign(partner, {
@@ -45,7 +52,7 @@ export class PartnersService {
   }
 
   async remove(id: string) {
-    const partner = await this.partnerRepo.findOne({ where: { id } });
+    const partner = await this.partnerRepo.findOne({ where: { id, tenant_id: this.getTenantId() } });
     if(partner) {
       await this.partnerRepo.remove(partner);
     }
@@ -55,8 +62,8 @@ export class PartnersService {
   async calculateSettlement(farmId: string, harvestId?: string) {
     const partners = await this.findAll(farmId);
     
-    const expWhere: any = { farm: { id: farmId } };
-    const revWhere: any = { farm: { id: farmId } };
+    const expWhere: any = { farm: { id: farmId }, tenant_id: this.getTenantId() };
+    const revWhere: any = { farm: { id: farmId }, tenant_id: this.getTenantId() };
 
     if (harvestId) {
       expWhere.harvest = { id: harvestId };
@@ -119,11 +126,11 @@ export class PartnersService {
   }
 
   async getStatement(partnerId: string, harvestId?: string) {
-    const partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
+    const partner = await this.partnerRepo.findOne({ where: { id: partnerId, tenant_id: this.getTenantId() } });
     if (!partner) throw new NotFoundException('Sócio não encontrado.');
 
-    const expWhere: any = { partner: { id: partnerId } };
-    const revWhere: any = { partner: { id: partnerId } };
+    const expWhere: any = { partner: { id: partnerId }, tenant_id: this.getTenantId() };
+    const revWhere: any = { partner: { id: partnerId }, tenant_id: this.getTenantId() };
 
     if (harvestId) {
       expWhere.harvest = { id: harvestId };

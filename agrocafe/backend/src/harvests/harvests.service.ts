@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { Harvest, HarvestStatus } from './entities/harvest.entity';
@@ -6,6 +6,7 @@ import { Farm } from '../farms/entities/farm.entity';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CloseHarvestDto } from './dto/close-harvest.dto';
 import { UpdateHarvestDto } from './dto/update-harvest.dto';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class HarvestsService {
@@ -13,15 +14,22 @@ export class HarvestsService {
     @InjectRepository(Harvest)
     private harvestsRepository: Repository<Harvest>,
     @InjectRepository(Farm)
+    @InjectRepository(Farm)
     private farmsRepository: Repository<Farm>,
   ) {}
+
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
 
   /**
    * Lista todas as safras de uma fazenda, ordenadas por data de criação (mais recente primeiro).
    */
   async findAllByFarm(farmId: string): Promise<Harvest[]> {
     return this.harvestsRepository.find({
-      where: { farm: { id: farmId } },
+      where: { farm: { id: farmId }, tenant_id: this.getTenantId() },
       order: { created_at: 'DESC' },
     });
   }
@@ -31,7 +39,7 @@ export class HarvestsService {
    */
   async findActiveByFarm(farmId: string): Promise<Harvest | null> {
     return this.harvestsRepository.findOne({
-      where: { farm: { id: farmId }, is_active: true, status: HarvestStatus.ABERTA },
+      where: { farm: { id: farmId }, is_active: true, status: HarvestStatus.ABERTA, tenant_id: this.getTenantId() },
     });
   }
 
@@ -40,7 +48,7 @@ export class HarvestsService {
    */
   async findById(id: string): Promise<Harvest> {
     const harvest = await this.harvestsRepository.findOne({
-      where: { id },
+      where: { id, tenant_id: this.getTenantId() },
       relations: ['farm'],
     });
     if (!harvest) {
@@ -57,14 +65,14 @@ export class HarvestsService {
    *  - A primeira safra criada é automaticamente ativada
    */
   async create(dto: CreateHarvestDto): Promise<Harvest> {
-    const farm = await this.farmsRepository.findOne({ where: { id: dto.farmId } });
+    const farm = await this.farmsRepository.findOne({ where: { id: dto.farmId, tenant_id: this.getTenantId() } });
     if (!farm) {
       throw new NotFoundException('Fazenda não encontrada.');
     }
 
     // Verificar se já existe safra aberta para esta fazenda
     const existingOpen = await this.harvestsRepository.findOne({
-      where: { farm: { id: dto.farmId }, status: HarvestStatus.ABERTA },
+      where: { farm: { id: dto.farmId }, status: HarvestStatus.ABERTA, tenant_id: this.getTenantId() },
     });
 
     if (existingOpen) {
@@ -86,7 +94,7 @@ export class HarvestsService {
 
     // Desativar outras safras desta fazenda
     await this.harvestsRepository.update(
-      { farm: { id: dto.farmId } },
+      { farm: { id: dto.farmId }, tenant_id: this.getTenantId() },
       { is_active: false },
     );
 
@@ -114,14 +122,14 @@ export class HarvestsService {
    */
   async setActive(farmId: string, harvestId: string): Promise<{ success: boolean }> {
     const harvest = await this.harvestsRepository.findOne({
-      where: { id: harvestId, farm: { id: farmId } },
+      where: { id: harvestId, farm: { id: farmId }, tenant_id: this.getTenantId() },
     });
     if (!harvest) {
       throw new NotFoundException('Safra não encontrada para esta fazenda.');
     }
 
     // Desativa todas da fazenda
-    await this.harvestsRepository.update({ farm: { id: farmId } }, { is_active: false });
+    await this.harvestsRepository.update({ farm: { id: farmId }, tenant_id: this.getTenantId() }, { is_active: false });
     // Ativa a selecionada
     await this.harvestsRepository.update(harvestId, { is_active: true });
 
@@ -193,7 +201,7 @@ export class HarvestsService {
 
     // Check if there is already an open harvest for this farm
     const existingOpen = await this.harvestsRepository.findOne({
-      where: { farm: { id: harvest.farm.id }, status: HarvestStatus.ABERTA },
+      where: { farm: { id: harvest.farm.id }, status: HarvestStatus.ABERTA, tenant_id: this.getTenantId() },
     });
 
     if (existingOpen) {
@@ -208,7 +216,7 @@ export class HarvestsService {
 
     // Desativar outras safras desta fazenda
     await this.harvestsRepository.update(
-      { farm: { id: harvest.farm.id }, id: Not(harvest.id) as any },
+      { farm: { id: harvest.farm.id }, id: Not(harvest.id) as any, tenant_id: this.getTenantId() },
       { is_active: false },
     );
 
@@ -221,7 +229,7 @@ export class HarvestsService {
    */
   async getGlobalActiveHarvest(): Promise<Harvest | null> {
     return this.harvestsRepository.findOne({
-      where: { is_active: true, status: HarvestStatus.ABERTA },
+      where: { is_active: true, status: HarvestStatus.ABERTA, tenant_id: this.getTenantId() },
       relations: ['farm'],
     });
   }
@@ -231,7 +239,7 @@ export class HarvestsService {
    */
   async getHarvestSummary(id: string) {
     const harvest = await this.harvestsRepository.findOne({
-      where: { id },
+      where: { id, tenant_id: this.getTenantId() },
       relations: ['expenses', 'revenues', 'farm'],
     });
 

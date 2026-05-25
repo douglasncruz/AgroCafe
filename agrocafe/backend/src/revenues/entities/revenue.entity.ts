@@ -1,8 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne , JoinColumn } from 'typeorm';
 import { Farm } from '../../farms/entities/farm.entity';
 import { Plot } from '../../plots/entities/plot.entity';
 import { Harvest } from '../../harvests/entities/harvest.entity';
 import { Partner } from '../../partners/entities/partner.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
+
 
 @Entity('revenues')
 export class Revenue {
@@ -42,7 +44,14 @@ export class Revenue {
   @Column({ nullable: true })
   receipt_url: string;
 
-  @CreateDateColumn()
+  
+  @Column({ nullable: true })
+  tenant_id: string;
+
+  @ManyToOne(() => Tenant, { nullable: true })
+  @JoinColumn({ name: 'tenant_id' })
+  tenant: Tenant;
+@CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()

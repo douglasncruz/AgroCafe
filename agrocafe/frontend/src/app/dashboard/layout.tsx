@@ -181,6 +181,7 @@ export default function DashboardLayout({
             <div className="space-y-1">
               <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Administração</p>
               <NavItem href="/dashboard/users" icon={ShieldCheck} activeColor="text-slate-900 bg-slate-100 dark:bg-slate-800 dark:text-white">Acessos de Usuários</NavItem>
+              <NavItem href="/dashboard/security" icon={ShieldAlert} activeColor="text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400">Logs de Segurança</NavItem>
             </div>
           )}
         </nav>

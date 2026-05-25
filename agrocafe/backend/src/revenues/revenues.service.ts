@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Revenue } from './entities/revenue.entity';
 import { Farm } from '../farms/entities/farm.entity';
 import { Partner } from '../partners/entities/partner.entity';
 import { HarvestValidationService } from '../harvests/harvest-validation.service';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class RevenuesService {
@@ -15,8 +16,15 @@ export class RevenuesService {
     private harvestValidation: HarvestValidationService,
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll() {
     return this.revenueRepo.find({
+      where: { tenant_id: this.getTenantId() },
       relations: ['farm', 'harvest', 'partner'],
       order: { date: 'DESC' },
     });
@@ -24,7 +32,7 @@ export class RevenuesService {
 
   async findByHarvest(harvestId: string) {
     return this.revenueRepo.find({
-      where: { harvest: { id: harvestId } },
+      where: { harvest: { id: harvestId }, tenant_id: this.getTenantId() },
       relations: ['farm', 'harvest', 'partner'],
       order: { date: 'DESC' },
     });
@@ -37,7 +45,7 @@ export class RevenuesService {
     const harvest = await this.harvestValidation.validateForFinancialEntry(harvestId);
 
     // Validar fazenda
-    const farm = await this.farmRepo.findOne({ where: { id: farmId } });
+    const farm = await this.farmRepo.findOne({ where: { id: farmId, tenant_id: this.getTenantId() } });
     if (farmId && !farm) {
       throw new BadRequestException('Fazenda não encontrada.');
     }
@@ -45,7 +53,7 @@ export class RevenuesService {
     // Validar parceiro (opcional)
     let partner = null;
     if (partnerId) {
-      partner = await this.partnerRepo.findOne({ where: { id: partnerId } });
+      partner = await this.partnerRepo.findOne({ where: { id: partnerId, tenant_id: this.getTenantId() } });
       if (!partner) {
         throw new BadRequestException('Sócio não encontrado.');
       }
@@ -81,7 +89,7 @@ export class RevenuesService {
 
   async remove(id: string) {
     const revenue = await this.revenueRepo.findOne({
-      where: { id },
+      where: { id, tenant_id: this.getTenantId() },
       relations: ['harvest'],
     });
 

@@ -1,8 +1,9 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StockItem } from './entities/stock-item.entity';
 import { StockTransaction } from './entities/stock-transaction.entity';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class StockService {
@@ -13,16 +14,22 @@ export class StockService {
     private transactionRepo: Repository<StockTransaction>,
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll(farmId: string): Promise<StockItem[]> {
     return this.itemRepo.find({
-      where: { farm: { id: farmId } },
+      where: { farm: { id: farmId }, tenant_id: this.getTenantId() },
       order: { product_name: 'ASC' },
     });
   }
 
   async findAllTransactions(farmId: string): Promise<StockTransaction[]> {
     return this.transactionRepo.find({
-      where: { farm: { id: farmId } },
+      where: { farm: { id: farmId }, tenant_id: this.getTenantId() },
       order: { date: 'DESC', created_at: 'DESC' },
     });
   }
@@ -57,7 +64,7 @@ export class StockService {
 
     // 2. Atualizar ou Criar Item de Estoque
     let item = await this.itemRepo.findOne({
-      where: { farm: { id: farmId }, product_name },
+      where: { farm: { id: farmId }, product_name, tenant_id: this.getTenantId() },
     });
 
     const change = type === 'ENTRADA' ? qty : -qty;

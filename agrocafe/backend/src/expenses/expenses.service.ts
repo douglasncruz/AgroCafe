@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Expense } from './entities/expense.entity';
 import { Farm } from '../farms/entities/farm.entity';
 import { HarvestValidationService } from '../harvests/harvest-validation.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class ExpensesService {
@@ -15,8 +16,15 @@ export class ExpensesService {
     private eventEmitter: EventEmitter2
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll() {
     return this.expenseRepo.find({
+      where: { tenant_id: this.getTenantId() },
       relations: ['farm', 'harvest'],
       order: { created_at: 'DESC' },
     });
@@ -24,7 +32,7 @@ export class ExpensesService {
 
   async findByHarvest(harvestId: string) {
     return this.expenseRepo.find({
-      where: { harvest: { id: harvestId } },
+      where: { harvest: { id: harvestId }, tenant_id: this.getTenantId() },
       relations: ['farm', 'harvest'],
       order: { date: 'DESC' },
     });
@@ -37,7 +45,7 @@ export class ExpensesService {
     const harvest = await this.harvestValidation.validateForFinancialEntry(harvestId);
 
     // Validar fazenda
-    const farm = farmId ? await this.farmRepo.findOne({ where: { id: farmId } }) : null;
+    const farm = farmId ? await this.farmRepo.findOne({ where: { id: farmId, tenant_id: this.getTenantId() } }) : null;
     if (farmId && !farm) {
       throw new BadRequestException('Fazenda não encontrada.');
     }
@@ -65,7 +73,7 @@ export class ExpensesService {
 
   async update(id: string, updateDto: any) {
     const expense = await this.expenseRepo.findOne({
-      where: { id },
+      where: { id, tenant_id: this.getTenantId() },
       relations: ['harvest'],
     });
 
@@ -98,7 +106,7 @@ export class ExpensesService {
 
   async remove(id: string) {
     const expense = await this.expenseRepo.findOne({
-      where: { id },
+      where: { id, tenant_id: this.getTenantId() },
       relations: ['harvest'],
     });
 

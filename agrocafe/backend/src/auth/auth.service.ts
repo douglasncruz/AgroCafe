@@ -2,12 +2,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { TenantsService } from '../tenants/tenants.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private tenantsService: TenantsService
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -48,7 +50,9 @@ export class AuthService {
       sub: user.id, 
       is_demo: user.is_demo,
       permissions: userPermissions,
-      role_name: roleName
+      role_name: roleName,
+      tenant_id: user.tenant_id,
+      environment_type: user.tenant?.environment_type || (user.is_demo ? 'demo' : 'real')
     };
 
     return {
@@ -61,7 +65,9 @@ export class AuthService {
         permissions: userPermissions,
         role_name: roleName,
         avatar_base64: user.avatar_base64,
-        phone: user.phone
+        phone: user.phone,
+        tenant_id: user.tenant_id,
+        environment_type: user.tenant?.environment_type || (user.is_demo ? 'demo' : 'real')
       }
     };
   }
@@ -75,10 +81,14 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(registerDto.password, salt);
 
+    // Create a Tenant for the new user
+    const tenant = await this.tenantsService.createTenant(`Organização de ${registerDto.name}`, 'real', false);
+
     const newUser = await this.usersService.create({
       name: registerDto.name,
       email: registerDto.email,
       password_hash,
+      tenant_id: tenant.id
     });
 
     return this.login(newUser);

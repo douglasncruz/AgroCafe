@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType, NotificationPriority } from './entities/notification.entity';
 import { NotificationsGateway } from './notifications.gateway';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class NotificationsService {
@@ -11,6 +12,12 @@ export class NotificationsService {
     private notificationsRepository: Repository<Notification>,
     private notificationsGateway: NotificationsGateway
   ) {}
+
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
 
   async createNotification(data: {
     farmId?: string;
@@ -48,8 +55,8 @@ export class NotificationsService {
   async getUnreadForFarm(farmId: string): Promise<Notification[]> {
     return this.notificationsRepository.find({
       where: [
-        { farm: { id: farmId }, is_read: false },
-        { farm: undefined, user: undefined, is_read: false } // Global notifications
+        { farm: { id: farmId }, is_read: false, tenant_id: this.getTenantId() },
+        { farm: undefined, user: undefined, is_read: false, tenant_id: this.getTenantId() } // Global notifications
       ],
       order: { created_at: 'DESC' }
     });
@@ -58,8 +65,8 @@ export class NotificationsService {
   async getRecentForFarm(farmId: string, limit = 50): Promise<Notification[]> {
     return this.notificationsRepository.find({
       where: [
-        { farm: { id: farmId } },
-        { farm: undefined, user: undefined } 
+        { farm: { id: farmId }, tenant_id: this.getTenantId() },
+        { farm: undefined, user: undefined, tenant_id: this.getTenantId() } 
       ],
       order: { created_at: 'DESC' },
       take: limit
@@ -71,7 +78,7 @@ export class NotificationsService {
   }
 
   async markAllAsReadForFarm(farmId: string) {
-    await this.notificationsRepository.update({ farm: { id: farmId }, is_read: false }, { is_read: true });
+    await this.notificationsRepository.update({ farm: { id: farmId }, is_read: false, tenant_id: this.getTenantId() }, { is_read: true });
   }
 
   async deleteNotification(id: string) {

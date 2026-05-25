@@ -1,9 +1,10 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Diagnosis } from './entities/diagnosis.entity';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class AiService {
@@ -23,6 +24,12 @@ export class AiService {
     } else {
       this.logger.warn('GEMINI_API_KEY não configurada. Módulo de IA rodará em modo Mock.');
     }
+  }
+
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
   }
 
   async processChat(message: string, contextData: any = {}): Promise<string> {
@@ -52,7 +59,7 @@ Responda de forma clara, educada, e use formatação markdown se precisar.`
   async getDiagnosisHistory(farmId: string): Promise<Diagnosis[]> {
     if (!farmId) return [];
     return this.diagnosisRepository.find({
-      where: { farm: { id: farmId } },
+      where: { farm: { id: farmId }, tenant_id: this.getTenantId() },
       order: { created_at: 'DESC' }
     });
   }

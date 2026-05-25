@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Agrochemical } from './entities/agrochemical.entity';
 import { StockService } from '../stock/stock.service';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class AgrochemicalsService {
@@ -11,9 +12,15 @@ export class AgrochemicalsService {
     private stockService: StockService,
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll(farmId: string) {
     return this.repo.find({ 
-      where: { farm: { id: farmId } },
+      where: { farm: { id: farmId }, tenant_id: this.getTenantId() },
       order: { application_date: 'DESC' }
     });
   }
@@ -52,7 +59,7 @@ export class AgrochemicalsService {
   }
 
   async remove(id: string) {
-    const record = await this.repo.findOne({ where: { id } });
+    const record = await this.repo.findOne({ where: { id, tenant_id: this.getTenantId() } });
     if(record) {
       await this.repo.remove(record);
     }

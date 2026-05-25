@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Farm } from './entities/farm.entity';
@@ -11,6 +11,7 @@ import { Agrochemical } from '../agrochemicals/entities/agrochemical.entity';
 import { Harvest } from '../harvests/entities/harvest.entity';
 import { Machine } from '../machines/entities/machine.entity';
 import { Maintenance } from '../machines/entities/maintenance.entity';
+import { requestContext } from '../common/context/request-context';
 
 @Injectable()
 export class FarmsService {
@@ -20,8 +21,17 @@ export class FarmsService {
     private dataSource: DataSource
   ) {}
 
+  private getTenantId(): string {
+    const tenantId = requestContext.getStore()?.tenantId;
+    if (!tenantId) throw new UnauthorizedException('Tenant context missing');
+    return tenantId;
+  }
+
   async findAll() {
-    return this.farmRepo.find({ order: { name: 'ASC' } });
+    return this.farmRepo.find({ 
+      where: { tenant_id: this.getTenantId() },
+      order: { name: 'ASC' } 
+    });
   }
 
   async create(createFarmDto: any, userId: string) {
@@ -32,39 +42,40 @@ export class FarmsService {
       city: createFarmDto.city,
       state: createFarmDto.state,
       user: user || undefined,
+      // tenant_id is automatically added by TenantSubscriber
     });
     return this.farmRepo.save(farm);
   }
 
   async remove(id: string, userId: string) {
-    const farm = await this.farmRepo.findOne({ where: { id } });
+    const farm = await this.farmRepo.findOne({ where: { id, tenant_id: this.getTenantId() } });
     if (!farm) throw new NotFoundException('Fazenda não encontrada');
     
     await this.dataSource.transaction(async (manager) => {
       // 1. Limpar dependências profundas (manutenções de máquinas)
-      const machines = await manager.find(Machine, { where: { farm: { id } } });
+      const machines = await manager.find(Machine, { where: { farm: { id }, tenant_id: this.getTenantId() } });
       for(const m of machines) {
-         await manager.delete(Maintenance, { machine: { id: m.id } });
+         await manager.delete(Maintenance, { machine: { id: m.id }, tenant_id: this.getTenantId() });
       }
       
       // 2. Limpar dependências diretas da fazenda
-      await manager.delete(Expense, { farm: { id } });
-      await manager.delete(Revenue, { farm: { id } });
-      await manager.delete(Plot, { farm: { id } });
-      await manager.delete(Partner, { farm: { id } });
-      await manager.delete(Agrochemical, { farm: { id } });
-      await manager.delete(Machine, { farm: { id } });
-      await manager.delete(Harvest, { farm: { id } });
+      await manager.delete(Expense, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Revenue, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Plot, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Partner, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Agrochemical, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Machine, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Harvest, { farm: { id }, tenant_id: this.getTenantId() });
       
       // 3. Apagar a fazenda
-      await manager.delete(Farm, id);
+      await manager.delete(Farm, { id, tenant_id: this.getTenantId() });
     });
 
     return { success: true, message: 'Fazenda e todos os seus dados foram apagados.' };
   }
 
   async update(id: string, updateFarmDto: any, userId: string) {
-    const farm = await this.farmRepo.findOne({ where: { id } });
+    const farm = await this.farmRepo.findOne({ where: { id, tenant_id: this.getTenantId() } });
     if (!farm) throw new NotFoundException('Fazenda não encontrada');
     
     Object.assign(farm, {
