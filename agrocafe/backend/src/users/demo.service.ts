@@ -6,6 +6,7 @@ import { Farm } from '../farms/entities/farm.entity';
 import { Harvest } from '../harvests/entities/harvest.entity';
 import { Expense } from '../expenses/entities/expense.entity';
 import { Revenue } from '../revenues/entities/revenue.entity';
+import { Tenant } from '../tenants/entities/tenant.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -18,10 +19,23 @@ export class DemoService {
     @InjectRepository(Harvest) private harvestRepository: Repository<Harvest>,
     @InjectRepository(Expense) private expenseRepository: Repository<Expense>,
     @InjectRepository(Revenue) private revenueRepository: Repository<Revenue>,
+    @InjectRepository(Tenant) private tenantRepository: Repository<Tenant>,
   ) {}
 
   async resetDemoEnvironment() {
     this.logger.log('Iniciando Reset Automático do Ambiente de Demonstração...');
+
+    // 1. Garantir que o Tenant de Demonstração existe
+    let demoTenant = await this.tenantRepository.findOne({ where: { name: 'Ambiente de Demonstração' } });
+    if (!demoTenant) {
+      demoTenant = this.tenantRepository.create({
+        name: 'Ambiente de Demonstração',
+        environment_type: 'demo',
+        is_demo_account: true,
+      });
+      demoTenant = await this.tenantRepository.save(demoTenant);
+    }
+
 
     const demoEmail = 'chico.cafezal@agrocerradocafe.com.br';
     let demoUser = await this.userRepository.findOne({ where: { email: demoEmail } });
@@ -34,8 +48,12 @@ export class DemoService {
         email: demoEmail,
         password_hash,
         is_demo: true,
+        tenant_id: demoTenant.id,
       });
       demoUser = await this.userRepository.save(demoUser);
+    } else if (demoUser.tenant_id !== demoTenant.id) {
+      demoUser.tenant_id = demoTenant.id;
+      await this.userRepository.save(demoUser);
     }
 
     // Deletar Fazendas (Cascade deletes harvests, expenses, revenues if configured correctly)
@@ -60,6 +78,7 @@ export class DemoService {
       state: 'MG',
       total_area_hectares: 150,
       user: demoUser,
+      tenant_id: demoTenant.id,
     });
     const savedFarm = await this.farmRepository.save(farm);
 
@@ -71,6 +90,7 @@ export class DemoService {
       end_date: new Date('2024-04-30'),
       is_active: false,
       farm: savedFarm,
+      tenant_id: demoTenant.id,
     });
     const savedHarvest2023 = await this.harvestRepository.save(harvest2023);
 
@@ -82,23 +102,24 @@ export class DemoService {
       end_date: null,
       is_active: true,
       farm: savedFarm,
+      tenant_id: demoTenant.id,
     });
     const savedHarvest2024 = await this.harvestRepository.save(harvest2024);
 
     // Despesas e Receitas - 2023
     await this.expenseRepository.save([
-      { description: 'Fertilizantes NPK', amount: 150000, date: new Date('2023-06-15'), category: 'Insumos', harvest: savedHarvest2023, user: demoUser },
-      { description: 'Defensivos Agrícolas', amount: 80000, date: new Date('2023-08-20'), category: 'Insumos', harvest: savedHarvest2023, user: demoUser },
-      { description: 'Mão de Obra Colheita', amount: 120000, date: new Date('2023-11-10'), category: 'Mão de Obra', harvest: savedHarvest2023, user: demoUser },
+      { description: 'Fertilizantes NPK', amount: 150000, date: new Date('2023-06-15'), category: 'Insumos', harvest: savedHarvest2023, user: demoUser, tenant_id: demoTenant.id },
+      { description: 'Defensivos Agrícolas', amount: 80000, date: new Date('2023-08-20'), category: 'Insumos', harvest: savedHarvest2023, user: demoUser, tenant_id: demoTenant.id },
+      { description: 'Mão de Obra Colheita', amount: 120000, date: new Date('2023-11-10'), category: 'Mão de Obra', harvest: savedHarvest2023, user: demoUser, tenant_id: demoTenant.id },
     ]);
     await this.revenueRepository.save([
-      { description: 'Venda de Café Cereja (Bica Corrida)', amount: 650000, date: new Date('2024-01-15'), category: 'Venda', harvest: savedHarvest2023, user: demoUser },
+      { description: 'Venda de Café Cereja (Bica Corrida)', amount: 650000, date: new Date('2024-01-15'), category: 'Venda', harvest: savedHarvest2023, user: demoUser, tenant_id: demoTenant.id },
     ]);
 
     // Despesas - 2024
     await this.expenseRepository.save([
-      { description: 'Calcário e Gesso', amount: 45000, date: new Date('2024-05-10'), category: 'Insumos', harvest: savedHarvest2024, user: demoUser },
-      { description: 'Manutenção de Tratores', amount: 15000, date: new Date('2024-06-05'), category: 'Manutenção', harvest: savedHarvest2024, user: demoUser },
+      { description: 'Calcário e Gesso', amount: 45000, date: new Date('2024-05-10'), category: 'Insumos', harvest: savedHarvest2024, user: demoUser, tenant_id: demoTenant.id },
+      { description: 'Manutenção de Tratores', amount: 15000, date: new Date('2024-06-05'), category: 'Manutenção', harvest: savedHarvest2024, user: demoUser, tenant_id: demoTenant.id },
     ]);
 
     this.logger.log('Ambiente de Demonstração restaurado com sucesso!');
