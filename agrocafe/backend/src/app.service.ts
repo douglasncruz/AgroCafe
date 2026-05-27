@@ -48,6 +48,36 @@ export class AppService implements OnModuleInit {
           console.log(`[BOOTSTRAP] 🔄 Credenciais sincronizadas para: ${u.email}`);
         }
       }
+
+      console.log('🧹 Iniciando limpeza forçada de dados de demonstração (Fazendas e Safras)...');
+      try {
+        // 1. Limpar Fazenda de Demonstração e suas dependências
+        const demoFarms = await this.entityManager.query(`SELECT id FROM farms WHERE name = 'Agro Cerrado Café (Demonstração)'`);
+        for (const farm of demoFarms) {
+          await this.entityManager.query(`DELETE FROM expenses WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM revenues WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM harvests WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM farms WHERE id = '${farm.id}'`);
+        }
+        
+        // 2. Limpar Safras órfãs que possam ter restado
+        await this.entityManager.query(`DELETE FROM expenses WHERE "harvestId" IN (SELECT id FROM harvests WHERE name IN ('Safra 2023/2024', 'Safra 2024/2025'))`);
+        await this.entityManager.query(`DELETE FROM revenues WHERE "harvestId" IN (SELECT id FROM harvests WHERE name IN ('Safra 2023/2024', 'Safra 2024/2025'))`);
+        await this.entityManager.query(`DELETE FROM harvests WHERE name IN ('Safra 2023/2024', 'Safra 2024/2025')`);
+        
+        // 3. Garantir que a Fazenda "Família Cruz" e suas safras fiquem no mesmo tenant_id do Douglas Cruz
+        const douglas = await this.entityManager.findOne(User, { where: { email: 'douglas.cruz@agrocerradocafe.com.br' } });
+        if (douglas && douglas.tenant_id) {
+           await this.entityManager.query(`UPDATE farms SET tenant_id = '${douglas.tenant_id}' WHERE name = 'Família Cruz'`);
+           await this.entityManager.query(`UPDATE harvests SET tenant_id = '${douglas.tenant_id}' WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%'`);
+           await this.entityManager.query(`UPDATE expenses SET tenant_id = '${douglas.tenant_id}' WHERE "harvestId" IN (SELECT id FROM harvests WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%')`);
+           await this.entityManager.query(`UPDATE revenues SET tenant_id = '${douglas.tenant_id}' WHERE "harvestId" IN (SELECT id FROM harvests WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%')`);
+        }
+        console.log('✅ Dados de demonstração limpos e tenant_ids corrigidos com sucesso!');
+      } catch (e) {
+        console.error('❌ Erro limpando dados demo:', e.message);
+      }
+
     } catch (error) {
       console.error('❌ Erro na inicialização automática de usuários:', error.message);
     }
