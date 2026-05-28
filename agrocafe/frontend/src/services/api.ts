@@ -1,10 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-const cache = new Map<string, any>();
-
 export const api = {
   async post(endpoint: string, body: any, token?: string) {
-    cache.clear(); // Limpa o cache após qualquer modificação
     const headers: any = {
       'Content-Type': 'application/json',
     };
@@ -26,7 +23,6 @@ export const api = {
   },
 
   async postForm(endpoint: string, formData: FormData, token?: string) {
-    cache.clear();
     const headers: any = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     
@@ -42,7 +38,6 @@ export const api = {
   },
 
   async putForm(endpoint: string, formData: FormData, token?: string) {
-    cache.clear();
     const headers: any = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     
@@ -58,13 +53,6 @@ export const api = {
   },
 
   async get(endpoint: string, token: string) {
-    const cacheKey = `${endpoint}-${token}`;
-    
-    // Retorna do cache se existir
-    if (cache.has(cacheKey)) {
-      return cache.get(cacheKey);
-    }
-
     const res = await fetch(`${API_URL}${endpoint}`, {
       method: 'GET',
       headers: {
@@ -77,13 +65,10 @@ export const api = {
       throw new Error(data.message || 'Erro ao processar a requisição');
     }
     
-    // Salva no cache
-    cache.set(cacheKey, data);
     return data;
   },
 
   async delete(endpoint: string, token: string) {
-    cache.clear();
     const res = await fetch(`${API_URL}${endpoint}`, {
       method: 'DELETE',
       headers: {
@@ -99,7 +84,6 @@ export const api = {
   },
 
   async put(endpoint: string, body: any, token?: string) {
-    cache.clear();
     const headers: any = {
       'Content-Type': 'application/json',
     };
@@ -121,7 +105,6 @@ export const api = {
   },
 
   async patch(endpoint: string, body: any, token?: string) {
-    cache.clear();
     const headers: any = {
       'Content-Type': 'application/json',
     };
