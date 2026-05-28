@@ -57,6 +57,25 @@ export class AppService implements OnModuleInit {
           await this.entityManager.query(`DELETE FROM expenses WHERE "farmId" = '${farm.id}'`);
           await this.entityManager.query(`DELETE FROM revenues WHERE "farmId" = '${farm.id}'`);
           await this.entityManager.query(`DELETE FROM harvests WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM plots WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM partners WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM agrochemicals WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM ai_diagnoses WHERE "farmId" = '${farm.id}'`);
+          await this.entityManager.query(`DELETE FROM notifications WHERE "farmId" = '${farm.id}'`);
+          
+          // Limpar tabelas relacionadas a estoque e máquinas
+          const stockItems = await this.entityManager.query(`SELECT id FROM stock_items WHERE "farmId" = '${farm.id}'`);
+          for (const item of stockItems) {
+            await this.entityManager.query(`DELETE FROM stock_transactions WHERE "itemId" = '${item.id}'`);
+          }
+          await this.entityManager.query(`DELETE FROM stock_items WHERE "farmId" = '${farm.id}'`);
+          
+          const machines = await this.entityManager.query(`SELECT id FROM machines WHERE "farmId" = '${farm.id}'`);
+          for (const machine of machines) {
+            await this.entityManager.query(`DELETE FROM maintenances WHERE "machineId" = '${machine.id}'`);
+          }
+          await this.entityManager.query(`DELETE FROM machines WHERE "farmId" = '${farm.id}'`);
+
           await this.entityManager.query(`DELETE FROM farms WHERE id = '${farm.id}'`);
         }
         
