@@ -62,7 +62,20 @@ export class FarmsService {
          await manager.delete(Maintenance, { machine: { id: m.id }, tenant_id: this.getTenantId() });
       }
       
-      // 2. Limpar dependências diretas da fazenda
+      // 2. Limpar dependências diretas da fazenda e orfãos atrelados às safras
+      // StockItems can have transactions, so we delete transactions first
+      const stockItems = await manager.find(StockItem, { where: { farm: { id }, tenant_id: this.getTenantId() } });
+      for (const item of stockItems) {
+         await manager.delete(StockTransaction, { item: { id: item.id }, tenant_id: this.getTenantId() });
+      }
+      await manager.delete(StockItem, { farm: { id }, tenant_id: this.getTenantId() });
+
+      const harvests = await manager.find(Harvest, { where: { farm: { id }, tenant_id: this.getTenantId() } });
+      for (const h of harvests) {
+         await manager.delete(Expense, { harvest: { id: h.id }, tenant_id: this.getTenantId() });
+         await manager.delete(Revenue, { harvest: { id: h.id }, tenant_id: this.getTenantId() });
+      }
+
       await manager.delete(Expense, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Revenue, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Plot, { farm: { id }, tenant_id: this.getTenantId() });
@@ -72,13 +85,6 @@ export class FarmsService {
       await manager.delete(Harvest, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Diagnosis, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Notification, { farm: { id }, tenant_id: this.getTenantId() });
-      
-      // StockItems can have transactions, so we delete transactions first
-      const stockItems = await manager.find(StockItem, { where: { farm: { id }, tenant_id: this.getTenantId() } });
-      for (const item of stockItems) {
-         await manager.delete(StockTransaction, { item: { id: item.id }, tenant_id: this.getTenantId() });
-      }
-      await manager.delete(StockItem, { farm: { id }, tenant_id: this.getTenantId() });
       
       // 3. Apagar a fazenda
       await manager.delete(Farm, { id, tenant_id: this.getTenantId() });

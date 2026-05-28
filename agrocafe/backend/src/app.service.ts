@@ -55,8 +55,8 @@ export class AppService implements OnModuleInit {
         const demoFarms = await this.entityManager.query(`SELECT id FROM farms WHERE name = 'Agro Cerrado Café (Demonstração)'`);
         for (const farm of demoFarms) {
           const queries = [
-            `DELETE FROM expenses WHERE "farmId" = '${farm.id}'`,
-            `DELETE FROM revenues WHERE "farmId" = '${farm.id}'`,
+            `DELETE FROM expenses WHERE "farmId" = '${farm.id}' OR "harvestId" IN (SELECT id FROM harvests WHERE "farmId" = '${farm.id}')`,
+            `DELETE FROM revenues WHERE "farmId" = '${farm.id}' OR "harvestId" IN (SELECT id FROM harvests WHERE "farmId" = '${farm.id}')`,
             `DELETE FROM harvests WHERE "farmId" = '${farm.id}'`,
             `DELETE FROM plots WHERE "farmId" = '${farm.id}'`,
             `DELETE FROM partners WHERE "farmId" = '${farm.id}'`,
