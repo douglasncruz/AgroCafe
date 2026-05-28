@@ -65,10 +65,10 @@ export class AppService implements OnModuleInit {
         await this.entityManager.query(`DELETE FROM revenues WHERE "harvestId" IN (SELECT id FROM harvests WHERE name IN ('Safra 2023/2024', 'Safra 2024/2025'))`);
         await this.entityManager.query(`DELETE FROM harvests WHERE name IN ('Safra 2023/2024', 'Safra 2024/2025')`);
         
-        // 3. Garantir que a Fazenda "Família Cruz" e suas safras fiquem no mesmo tenant_id do Douglas Cruz
+        // 3. Garantir que a Fazenda real e suas safras fiquem no mesmo tenant_id do Douglas Cruz
         const douglas = await this.entityManager.findOne(User, { where: { email: 'douglas.cruz@agrocerradocafe.com.br' } });
         if (douglas && douglas.tenant_id) {
-           await this.entityManager.query(`UPDATE farms SET tenant_id = '${douglas.tenant_id}' WHERE name = 'Família Cruz'`);
+           await this.entityManager.query(`UPDATE farms SET tenant_id = '${douglas.tenant_id}' WHERE name IN ('Família Cruz', 'Fazenda Pai e Filho')`);
            await this.entityManager.query(`UPDATE harvests SET tenant_id = '${douglas.tenant_id}' WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%'`);
            await this.entityManager.query(`UPDATE expenses SET tenant_id = '${douglas.tenant_id}' WHERE "harvestId" IN (SELECT id FROM harvests WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%')`);
            await this.entityManager.query(`UPDATE revenues SET tenant_id = '${douglas.tenant_id}' WHERE "harvestId" IN (SELECT id FROM harvests WHERE name LIKE 'Safra 202%' AND name NOT LIKE '%/%')`);

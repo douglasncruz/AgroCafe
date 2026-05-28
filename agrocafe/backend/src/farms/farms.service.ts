@@ -11,6 +11,10 @@ import { Agrochemical } from '../agrochemicals/entities/agrochemical.entity';
 import { Harvest } from '../harvests/entities/harvest.entity';
 import { Machine } from '../machines/entities/machine.entity';
 import { Maintenance } from '../machines/entities/maintenance.entity';
+import { Diagnosis } from '../ai/entities/diagnosis.entity';
+import { Notification } from '../notifications/entities/notification.entity';
+import { StockItem } from '../stock/entities/stock-item.entity';
+import { StockTransaction } from '../stock/entities/stock-transaction.entity';
 import { requestContext } from '../common/context/request-context';
 
 @Injectable()
@@ -66,6 +70,15 @@ export class FarmsService {
       await manager.delete(Agrochemical, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Machine, { farm: { id }, tenant_id: this.getTenantId() });
       await manager.delete(Harvest, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Diagnosis, { farm: { id }, tenant_id: this.getTenantId() });
+      await manager.delete(Notification, { farm: { id }, tenant_id: this.getTenantId() });
+      
+      // StockItems can have transactions, so we delete transactions first
+      const stockItems = await manager.find(StockItem, { where: { farm: { id }, tenant_id: this.getTenantId() } });
+      for (const item of stockItems) {
+         await manager.delete(StockTransaction, { item: { id: item.id }, tenant_id: this.getTenantId() });
+      }
+      await manager.delete(StockItem, { farm: { id }, tenant_id: this.getTenantId() });
       
       // 3. Apagar a fazenda
       await manager.delete(Farm, { id, tenant_id: this.getTenantId() });
