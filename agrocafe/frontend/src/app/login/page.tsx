@@ -29,7 +29,7 @@ export default function LoginPage() {
       localStorage.setItem("@AgroCafe:user", JSON.stringify(data.user));
       
       toast.success("Login realizado com sucesso!");
-      router.push("/dashboard"); // Futura rota
+      window.location.href = "/dashboard";
     } catch (err: any) {
       toast.error(err.message || "E-mail ou senha incorretos.");
     } finally {

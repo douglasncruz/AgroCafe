@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { api } from '@/services/api';
 
 export interface Farm {
@@ -100,9 +101,14 @@ export function HarvestProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    loadFarmsAndHarvests();
-  }, []);
+    const token = localStorage.getItem("@AgroCafe:token");
+    if (farms.length === 0 && token) {
+      loadFarmsAndHarvests();
+    }
+  }, [pathname]);
 
   const selectFarm = async (farmId: string) => {
     const farm = farms.find(f => f.id === farmId);
