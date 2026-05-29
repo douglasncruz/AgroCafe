@@ -14,7 +14,7 @@ export default function ExpensesPage() {
   const [farms, setFarms] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
+  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest, selectedFarm } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -49,7 +49,13 @@ export default function ExpensesPage() {
       ]);
       setExpenses(expData);
       setFarms(farmData);
-      if (farmData.length > 0) setFarmId(farmData[0].id);
+      
+      if (selectedFarm) {
+        setFarmId(selectedFarm.id);
+      } else if (farmData.length > 0) {
+        setFarmId(farmData[0].id);
+      }
+
       if (activeOpenHarvest) setHarvestId(activeOpenHarvest.id);
       else if (selectedHarvest) setHarvestId(selectedHarvest.id);
     } catch (err) {

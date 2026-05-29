@@ -150,7 +150,7 @@ export default function DashboardLayout({
             <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Visão Geral</p>
             <NavItem href="/dashboard" icon={LayoutDashboard}>Painel 360°</NavItem>
             {hasPermission('harvests') && <NavItem href="/dashboard/harvests" icon={Wheat} activeColor="text-farm-700 bg-farm-50 dark:bg-farm-900/20 dark:text-farm-400">Safras</NavItem>}
-            {hasPermission('plots') && <NavItem href="/dashboard/plots" icon={Map} activeColor="text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-500">Meus Talhões</NavItem>}
+            {hasPermission('plots') && <NavItem href="/dashboard/plots" icon={Map} activeColor="text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-500">Fazendas & Talhões</NavItem>}
             {hasPermission('agrochemicals') && <NavItem href="/dashboard/agrochemicals" icon={FlaskConical} activeColor="text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400">Defensivos & Receitas</NavItem>}
           </div>
 

@@ -15,7 +15,7 @@ export default function PartnersPage() {
   const [partners, setPartners] = useState<any[]>([]);
   const [settlement, setSettlement] = useState<any>(null);
   
-  const { harvests, selectedHarvest } = useHarvest();
+  const { harvests, selectedHarvest, selectedFarm } = useHarvest();
   
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +43,7 @@ export default function PartnersPage() {
       const farmData = await api.get('/farms', token);
       setFarms(farmData);
       
-      const targetFarmId = farmIdToLoad || (farmData.length > 0 ? farmData[0].id : null);
+      const targetFarmId = farmIdToLoad || selectedFarm?.id || (farmData.length > 0 ? farmData[0].id : null);
       if (targetFarmId) {
         setSelectedFarmId(targetFarmId);
         await loadFarmData(targetFarmId, token);

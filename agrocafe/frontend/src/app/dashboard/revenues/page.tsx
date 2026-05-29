@@ -14,7 +14,7 @@ export default function RevenuesPage() {
   const [farms, setFarms] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest } = useHarvest();
+  const { harvests, selectedHarvest, hasOpenHarvest, activeOpenHarvest, selectedFarm } = useHarvest();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -40,10 +40,10 @@ export default function RevenuesPage() {
       const farmData = await api.get('/farms', token);
       setRevenues(revData);
       setFarms(farmData);
-      if (farmData.length > 0) {
-        const farmId = farmData[0].id;
-        setFarmId(farmId);
-        const partnerData = await api.get(`/partners?farmId=${farmId}`, token);
+      const targetFarmId = selectedFarm?.id || (farmData.length > 0 ? farmData[0].id : null);
+      if (targetFarmId) {
+        setFarmId(targetFarmId);
+        const partnerData = await api.get(`/partners?farmId=${targetFarmId}`, token);
         setPartners(partnerData);
         if (partnerData.length > 0) setPartnerId(partnerData[0].id);
       }
