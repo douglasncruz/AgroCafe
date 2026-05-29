@@ -122,7 +122,7 @@ export default function FarmsPage() {
             <p className="text-slate-500 dark:text-slate-400 text-sm">Gerencie suas propriedades e áreas de plantio</p>
           </div>
           <Button className="bg-amber-600 hover:bg-amber-700 text-white" onClick={openNewModal}>
-            <Plus className="mr-2 h-4 w-4" /> Nova Fazenda
+            <Plus className="mr-2 h-4 w-4" /> Nova Fazenda / Talhões
           </Button>
         </div>
 
