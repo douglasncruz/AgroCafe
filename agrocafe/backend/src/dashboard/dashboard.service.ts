@@ -75,7 +75,7 @@ export class DashboardService {
     }));
 
     const farmTotals: Record<string, number> = {};
-    const partnersMap: Record<string, number> = {};
+    const partnersMap: Record<string, { despesas: number; receitas: number; saldo: number }> = {};
     const categoryTotals: Record<string, number> = {};
     let totalSacas = 0;
 
@@ -92,7 +92,11 @@ export class DashboardService {
       categoryTotals[catName] = (categoryTotals[catName] || 0) + val;
 
       const pName = exp.partner ? exp.partner.name : exp.payer_name;
-      if (pName) partnersMap[pName] = (partnersMap[pName] || 0) - val;
+      if (pName) {
+        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0 };
+        partnersMap[pName].despesas += val;
+        partnersMap[pName].saldo -= val;
+      }
     });
 
     maintenances.forEach(maint => {
@@ -115,7 +119,11 @@ export class DashboardService {
       totalSacas += Number(rev.sacks_sold);
 
       const pName = rev.partner ? rev.partner.name : rev.receiver_name;
-      if (pName) partnersMap[pName] = (partnersMap[pName] || 0) + val;
+      if (pName) {
+        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0 };
+        partnersMap[pName].receitas += val;
+        partnersMap[pName].saldo += val;
+      }
     });
 
     const colors = ["var(--color-farm-500)", "var(--color-coffee-500)", "var(--color-earth-500)", "var(--color-slate-500)", "#ef4444", "#f59e0b"];
@@ -143,7 +151,7 @@ export class DashboardService {
     const totalDespesas = monthlyData.reduce((acc, curr) => acc + curr.despesas, 0);
     const totalReceitas = monthlyData.reduce((acc, curr) => acc + curr.receitas, 0);
 
-    const partnerSplit = Object.entries(partnersMap).map(([name, value]) => ({ name, value }));
+    const partnerSplit = Object.entries(partnersMap).map(([name, data]) => ({ name, ...data }));
 
     let partnerAcerto = null;
     if (partnerId) {

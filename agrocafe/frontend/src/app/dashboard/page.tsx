@@ -376,6 +376,59 @@ export default function DashboardPage() {
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-2">
         
+        {/* Monthly Expenses Chart */}
+        {(() => {
+          const monthlyData = data.cashflow || data.cashflowData || [];
+          const expensesOnly = monthlyData.filter((d: any) => d.despesas > 0);
+          const maxExpenseMonth = expensesOnly.length > 0 ? expensesOnly.reduce((prev: any, current: any) => (prev.despesas > current.despesas) ? prev : current) : null;
+          const minExpenseMonth = expensesOnly.length > 0 ? expensesOnly.reduce((prev: any, current: any) => (prev.despesas < current.despesas) ? prev : current) : null;
+          
+          return (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-red-500" /> Histórico Mensal de Despesas
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Sazonalidade e distribuição de gastos</p>
+                </div>
+                <div className="flex gap-4 mt-4 md:mt-0">
+                  {maxExpenseMonth && (
+                    <div className="bg-red-50 dark:bg-red-900/10 px-4 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
+                      <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mb-0.5">Maior Gasto ({maxExpenseMonth.month})</p>
+                      <p className="text-lg font-bold text-red-700 dark:text-red-500 leading-none">{formatCurrency(maxExpenseMonth.despesas)}</p>
+                    </div>
+                  )}
+                  {minExpenseMonth && (
+                    <div className="bg-green-50 dark:bg-green-900/10 px-4 py-2 rounded-xl border border-green-100 dark:border-green-900/30">
+                      <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider mb-0.5">Menor Gasto ({minExpenseMonth.month})</p>
+                      <p className="text-lg font-bold text-green-700 dark:text-green-500 leading-none">{formatCurrency(minExpenseMonth.despesas)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800/50" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} className="text-slate-500" />
+                    <YAxis tickFormatter={(val) => `R$ ${val / 1000}k`} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} className="text-slate-500" />
+                    <Tooltip formatter={((value: any) => formatCurrency(Number(value))) as any} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                    <Bar dataKey="despesas" name="Despesas" radius={[4, 4, 0, 0]}>
+                      {monthlyData.map((entry: any, index: number) => {
+                        const isMax = maxExpenseMonth && entry.month === maxExpenseMonth.month;
+                        const isMin = minExpenseMonth && entry.month === minExpenseMonth.month;
+                        return <Cell key={`cell-${index}`} fill={isMax ? '#dc2626' : isMin ? '#34d399' : '#f87171'} />;
+                      })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Cashflow Chart */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
           <div className="mb-6">
@@ -500,7 +553,7 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
-        {/* Visão de Sociedade (Bar Chart) */}
+        {/* Visão de Sociedade (Bar Chart -> Tabela) */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:col-span-2">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Balanço Físico dos Sócios</h3>
@@ -508,23 +561,32 @@ export default function DashboardPage() {
               Mostra quem reteve dinheiro no bolso (Positivo) e quem pagou do próprio bolso (Negativo).
             </p>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="w-full overflow-x-auto">
             {data.partnerSplit && data.partnerSplit.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.partnerSplit} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={(val) => `R$ ${val/1000}k`} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <Tooltip formatter={((value: any) => formatCurrency(Number(value || 0))) as any} cursor={{ fill: 'transparent' }} />
-                  <Bar dataKey="value" name="Saldo Físico (R$)" radius={[4, 4, 4, 4]}>
-                    {data.partnerSplit.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#16a34a' : '#ef4444'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-500 border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">Sócio</th>
+                    <th className="px-4 py-3 text-right font-semibold">Despesas (Pagou)</th>
+                    <th className="px-4 py-3 text-right font-semibold">Receitas (Reteve)</th>
+                    <th className="px-4 py-3 text-right font-semibold">Consolidado (Caixa)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.partnerSplit.map((p: any, i: number) => (
+                    <tr key={i} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{p.name}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(p.despesas)}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(p.receitas)}</td>
+                      <td className={`px-4 py-3 text-right font-bold ${p.saldo >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                        {formatCurrency(p.saldo)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
-              <div className="h-full flex items-center justify-center text-slate-500 border border-dashed border-slate-200 rounded-lg dark:border-slate-800">
+              <div className="h-[300px] flex items-center justify-center text-slate-500 border border-dashed border-slate-200 rounded-lg dark:border-slate-800">
                 Ainda não há dados financeiros vinculados a sócios.
               </div>
             )}
