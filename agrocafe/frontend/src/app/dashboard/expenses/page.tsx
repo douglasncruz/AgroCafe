@@ -453,6 +453,7 @@ export default function ExpensesPage() {
                       <option value="Defensivos Agrícolas">Defensivos Agrícolas</option>
                       <option value="Taxa Administração e Impostos">Taxa Administração e Impostos</option>
                       <option value="Infraestrutura">Infraestrutura</option>
+                      <option value="Armazenamento Grãos">Armazenamento Grãos</option>
                       <option value="Outros">Outros</option>
                     </select>
                   </div>
