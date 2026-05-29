@@ -431,6 +431,59 @@ export default function ReportsPage() {
               </div>
             </div>
           </div>
+          {/* Mensalidades Dashboard */}
+          {(() => {
+            const monthlyData = reportData.monthlyData || [];
+            const expensesOnly = monthlyData.filter((d: any) => d.despesas > 0);
+            const maxExpenseMonth = expensesOnly.length > 0 ? expensesOnly.reduce((prev: any, current: any) => (prev.despesas > current.despesas) ? prev : current) : null;
+            const minExpenseMonth = expensesOnly.length > 0 ? expensesOnly.reduce((prev: any, current: any) => (prev.despesas < current.despesas) ? prev : current) : null;
+            
+            return (
+              <div className="p-8 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 print:hidden">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+                  <div>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                      <TrendingDown className="h-5 w-5 text-red-500" /> Histórico Mensal de Despesas
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Sazonalidade e distribuição de gastos ao longo do ano</p>
+                  </div>
+                  <div className="flex gap-4 mt-4 md:mt-0">
+                    {maxExpenseMonth && (
+                      <div className="bg-red-50 dark:bg-red-900/10 px-4 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-bold uppercase tracking-wider mb-0.5">Maior Gasto ({maxExpenseMonth.month})</p>
+                        <p className="text-lg font-bold text-red-700 dark:text-red-500 leading-none">{formatCurrency(maxExpenseMonth.despesas)}</p>
+                      </div>
+                    )}
+                    {minExpenseMonth && (
+                      <div className="bg-green-50 dark:bg-green-900/10 px-4 py-2 rounded-xl border border-green-100 dark:border-green-900/30">
+                        <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider mb-0.5">Menor Gasto ({minExpenseMonth.month})</p>
+                        <p className="text-lg font-bold text-green-700 dark:text-green-500 leading-none">{formatCurrency(minExpenseMonth.despesas)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800/50" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} className="text-slate-500" />
+                      <YAxis tickFormatter={(val) => `R$ ${val / 1000}k`} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} className="text-slate-500" />
+                      <RechartsTooltip formatter={(value: any) => formatCurrency(Number(value))} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                      <Bar dataKey="despesas" name="Despesas" radius={[4, 4, 0, 0]}>
+                        {monthlyData.map((entry: any, index: number) => {
+                          const isMax = maxExpenseMonth && entry.month === maxExpenseMonth.month;
+                          const isMin = minExpenseMonth && entry.month === minExpenseMonth.month;
+                          return <Cell key={`cell-${index}`} fill={isMax ? '#dc2626' : isMin ? '#34d399' : '#f87171'} />;
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Web Footer */}
           <div className="p-4 bg-slate-50 text-center text-xs text-slate-400 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 print:hidden">
             Gerado pelo AgroCafe | {new Date().toLocaleString("pt-BR")}
