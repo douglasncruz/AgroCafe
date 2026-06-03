@@ -44,6 +44,7 @@ import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { SecurityLog } from './security-logs/entities/security-log.entity';
 import { TenantsModule } from './tenants/tenants.module';
 import { Tenant } from './tenants/entities/tenant.entity';
+import { TenantSubscriber } from './tenants/subscribers/tenant.subscriber';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { Tenant } from './tenants/entities/tenant.entity';
             type: 'postgres',
             url: databaseUrl,
             entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis, SecurityLog, Tenant],
+            subscribers: [TenantSubscriber],
             synchronize: true, // Habilitado para criar as tabelas no Supabase durante a instalação
             ssl: {
               rejectUnauthorized: false,
@@ -79,6 +81,7 @@ import { Tenant } from './tenants/entities/tenant.entity';
           type: 'sqlite',
           database: 'agrocafe.sqlite',
           entities: [User, Farm, Plot, Expense, Revenue, Machine, Maintenance, Partner, Agrochemical, Harvest, StockItem, StockTransaction, Notification, Diagnosis, SecurityLog, Tenant],
+          subscribers: [TenantSubscriber],
           synchronize: process.env.NODE_ENV !== 'production',
         };
       },
