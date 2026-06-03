@@ -75,9 +75,15 @@ export class DashboardService {
     }));
 
     const farmTotals: Record<string, number> = {};
-    const partnersMap: Record<string, { despesas: number; receitas: number; saldo: number }> = {};
     const categoryTotals: Record<string, number> = {};
     let totalSacas = 0;
+
+    interface PartnerMonthly {
+      despesas: number;
+      receitas: number;
+      saldo: number;
+    }
+    const partnersMap: Record<string, { despesas: number; receitas: number; saldo: number; monthly: Record<string, PartnerMonthly> }> = {};
 
     expenses.forEach(exp => {
       const d = new Date(exp.date);
@@ -93,9 +99,13 @@ export class DashboardService {
 
       const pName = exp.partner ? exp.partner.name : exp.payer_name;
       if (pName) {
-        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0 };
+        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0, monthly: {} };
         partnersMap[pName].despesas += val;
         partnersMap[pName].saldo -= val;
+        const mName = monthNames[m];
+        if (!partnersMap[pName].monthly[mName]) partnersMap[pName].monthly[mName] = { despesas: 0, receitas: 0, saldo: 0 };
+        partnersMap[pName].monthly[mName].despesas += val;
+        partnersMap[pName].monthly[mName].saldo -= val;
       }
     });
 
@@ -120,9 +130,13 @@ export class DashboardService {
 
       const pName = rev.partner ? rev.partner.name : rev.receiver_name;
       if (pName) {
-        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0 };
+        if (!partnersMap[pName]) partnersMap[pName] = { despesas: 0, receitas: 0, saldo: 0, monthly: {} };
         partnersMap[pName].receitas += val;
         partnersMap[pName].saldo += val;
+        const mName = monthNames[m];
+        if (!partnersMap[pName].monthly[mName]) partnersMap[pName].monthly[mName] = { despesas: 0, receitas: 0, saldo: 0 };
+        partnersMap[pName].monthly[mName].receitas += val;
+        partnersMap[pName].monthly[mName].saldo += val;
       }
     });
 

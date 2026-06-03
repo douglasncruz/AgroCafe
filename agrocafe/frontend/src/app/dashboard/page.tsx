@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowDownRight, ArrowUpRight, Sprout, TrendingDown, TrendingUp, Wallet, Loader2, Tractor, Wheat, ChevronDown, FileText } from "lucide-react";
 import { api } from "@/services/api";
@@ -567,22 +567,40 @@ export default function DashboardPage() {
                 <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-500 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">Sócio</th>
+                    <th className="px-4 py-3 text-left font-semibold">Mês</th>
                     <th className="px-4 py-3 text-right font-semibold">Despesas (Pagou)</th>
                     <th className="px-4 py-3 text-right font-semibold">Receitas (Reteve)</th>
                     <th className="px-4 py-3 text-right font-semibold">Consolidado (Caixa)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.partnerSplit.map((p: any, i: number) => (
-                    <tr key={i} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{p.name}</td>
-                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(p.despesas)}</td>
-                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(p.receitas)}</td>
-                      <td className={`px-4 py-3 text-right font-bold ${p.saldo >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                        {formatCurrency(p.saldo)}
-                      </td>
-                    </tr>
-                  ))}
+                  {data.partnerSplit.map((p: any) => {
+                    const months = Object.entries(p.monthly || {});
+                    return (
+                      <React.Fragment key={p.name}>
+                        <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                          <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{p.name}</td>
+                          <td className="px-4 py-3 font-bold text-slate-700 dark:text-slate-300">Total Ano/Safra</td>
+                          <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-slate-100">{formatCurrency(p.despesas)}</td>
+                          <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-slate-100">{formatCurrency(p.receitas)}</td>
+                          <td className={`px-4 py-3 text-right font-bold ${p.saldo >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                            {formatCurrency(p.saldo)}
+                          </td>
+                        </tr>
+                        {months.map(([month, mData]: any) => (
+                          <tr key={`${p.name}-${month}`} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <td className="px-4 py-2"></td>
+                            <td className="px-4 py-2 font-medium text-slate-600 dark:text-slate-400">{month}</td>
+                            <td className="px-4 py-2 text-right text-slate-500 dark:text-slate-500">{formatCurrency(mData.despesas)}</td>
+                            <td className="px-4 py-2 text-right text-slate-500 dark:text-slate-500">{formatCurrency(mData.receitas)}</td>
+                            <td className={`px-4 py-2 text-right font-medium ${mData.saldo >= 0 ? "text-green-500" : "text-red-500"}`}>
+                              {formatCurrency(mData.saldo)}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    )
+                  })}
                 </tbody>
               </table>
             ) : (
