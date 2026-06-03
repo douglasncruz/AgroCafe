@@ -67,7 +67,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedFarm?.id, selectedHarvest?.id]);
 
   useEffect(() => {
     const fetchPartners = async () => {

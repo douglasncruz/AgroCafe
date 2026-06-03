@@ -58,7 +58,7 @@ export default function RevenuesPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedFarm?.id, selectedHarvest?.id]);
 
   const handleDelete = async (id: string, info: string) => {
     if (!confirm(`Deseja realmente apagar a venda de ${info}?`)) return;

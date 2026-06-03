@@ -77,7 +77,7 @@ export default function PartnersPage() {
 
   useEffect(() => {
     loadData();
-  }, [selectedHarvest]);
+  }, [selectedHarvest, selectedFarm?.id]);
 
   const handleFarmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;

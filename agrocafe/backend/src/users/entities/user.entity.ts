@@ -33,7 +33,7 @@ export class User {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   last_login: Date;
 
   @Column({ type: 'json', default: '{}' })
